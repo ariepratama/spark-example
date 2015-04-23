@@ -133,10 +133,11 @@ public class StreamEventBackup {
           }
           if (saveAsHadoopFile) {
             logger.info("----------SAVING AS HADOOP FILE----------");
-            stringJavaPairRDD.saveAsHadoopFile("s3n://mongodwh/spark-backup/" + dateString + "/" + topic + "/" + "/partition-" + System.currentTimeMillis(),
-                    Text.class,
-                    BytesWritable.class,
-                    SequenceFileOutputFormat.class);
+//            stringJavaPairRDD.saveAsHadoopFile("s3n://mongodwh/spark-backup/" + dateString + "/" + topic + "/" + "/partition-" + System.currentTimeMillis(),
+//                    Text.class,
+//                    BytesWritable.class,
+//                    SequenceFileOutputFormat.class);
+            stringJavaPairRDD.saveAsObjectFile("s3n://mongodwh/spark-backup/" + dateString + "/" + topic + "/" + "/partition-" + System.currentTimeMillis());
 //            stringJavaPairRDD.saveAsHadoopFile("s3n://mongodwh/spark-backup/" + dateString + "/" + topic + "/" + "/partition-" + System.currentTimeMillis(),
 //                    NullWritable.class,
 //                    BytesWritable.class,
