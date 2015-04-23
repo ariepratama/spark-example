@@ -1,0 +1,8 @@
+{"namespace": "track",
+ "type": "record",
+ "name": "flight.visit",
+ "fields": [
+     {"name": "_id", "type": ["long", "null"]},
+     {"name": "source", "type": ["string", "null"]}
+ ]
+}
