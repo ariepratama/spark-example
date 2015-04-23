@@ -6,7 +6,10 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.PairFunction;
 import org.traveloka.exception.NoTopicException;
+import scala.Tuple2;
+
 import java.util.List;
 
 /**
@@ -24,13 +27,30 @@ public class SimpleAppRead {
 //    if (args.length < 2 || args[0] == null || args[0].isEmpty()){
 //      throw new Exception("argument 2 missing: fill with timestamp");
 //    }
+    boolean readAsHadoopFile = false;
 
+    // optional params
+    if (args.length >= 2 && (args[1] != null || ! args[1].isEmpty())){
+      readAsHadoopFile = Boolean.parseBoolean(args[1]);
+    }
     String topic = args[0];
 //    String timestamp = args[1];
 
     JavaSparkContext sc = new JavaSparkContext(conf);
-    JavaRDD<String> rdd = sc.textFile("s3n://mongodwh/spark-backup/" + StreamEventBackup.dateString + "/" + topic + "/*");
-    List<String> data  = rdd.collect();
+    JavaPairRDD<String, byte[]> rdd = null;
+    if (! readAsHadoopFile)
+      rdd = sc.textFile("s3n://mongodwh/spark-backup/" + StreamEventBackup.dateString + "/" + topic + "/*").mapToPair(new PairFunction<String, String, byte[]>() {
+        @Override
+        public Tuple2<String, byte[]> call(String s) throws Exception {
+          return new Tuple2<String, byte[]>(s, s.getBytes());
+        }
+      });
+    else
+      rdd = sc.hadoopFile("s3n://mongodwh/spark-backup/" + StreamEventBackup.dateString + "/" + topic + "/*",
+              SequenceFileInputFormat.class,
+              String.class,
+              byte[].class);
+    List<String> data  = rdd.keys().collect();
     for (String datum: data){
       logger.info("**********>>>>" + datum);
     }

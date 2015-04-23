@@ -72,6 +72,13 @@ public class StreamEventBackup {
       throw new NoThreadException("number of threads is empty");
     }
 
+    boolean saveAsHadoopFile = false;
+
+    // optional params
+    if (args.length >= 3 && (args[2] != null || ! args[2].isEmpty())){
+      saveAsHadoopFile = Boolean.parseBoolean(args[2]);
+    }
+
     //process arguments
 //    final String[] topics = args[0].split(",");
     final String topic = args[0];
@@ -114,39 +121,40 @@ public class StreamEventBackup {
     logger.info("---------------------------------------------");
     logger.info("Save to Database if rdd is not empty");
     logger.info("---------------------------------------------");
-//    messagePair.saveAsHadoopFiles("s3n://mongodwh/spark-backup/" + dateString + "/" + topic + "/" + "/partition-" + System.currentTimeMillis(),
-//            "output",
-//            NullWritable.class,
-//            BytesWritable.class,
-//            SequenceFileOutputFormat.class);
+    if (saveAsHadoopFile) {
+      logger.info("----------SAVING AS HADOOP FILE----------");
+      // by default save as hadoop file has already use current timestamp in file name
+      messagePair.saveAsHadoopFiles("s3n://mongodwh/spark-backup/" + dateString + "/" + topic + "/" + "/partition-",
+              "output",
+              NullWritable.class,
+              BytesWritable.class,
+              SequenceFileOutputFormat.class);
+    }else {
+      logger.info("----------SAVING AS TEXT FILE----------");
+      messagePair.foreachRDD(new Function<JavaPairRDD<String, byte[]>, Void>() {
+        @Override
+        public Void call(JavaPairRDD<String, byte[]> stringJavaPairRDD) throws Exception {
 
-    messagePair.foreachRDD(new Function<JavaPairRDD<String, byte[]>, Void>() {
-      @Override
-      public Void call(JavaPairRDD<String, byte[]> stringJavaPairRDD) throws Exception {
+          if (stringJavaPairRDD.partitions().size() != 0) {
+            logger.info("partition size is not zero");
+            List<String> keys = stringJavaPairRDD.keys().collect();
+            for (String key : keys) {
+              logger.info("key|********|" + key);
+            }
 
-        if (stringJavaPairRDD.partitions().size() != 0) {
-          logger.info("partition size is not zero");
-          List<String> keys = stringJavaPairRDD.keys().collect();
-//          Iterator iter = keys.iterator();
-          for (String key : keys){
-            logger.info("key|********|" + key);
+//            stringJavaPairRDD.saveAsHadoopFile("s3n://mongodwh/spark-backup/" + dateString + "/" + topic + "/" + "/partition-" + System.currentTimeMillis(),
+//                    NullWritable.class,
+//                    BytesWritable.class,
+//                    SequenceFileOutputFormat.class);
+            stringJavaPairRDD.saveAsTextFile("s3n://mongodwh/spark-backup/" + dateString + "/" + topic + "/" + "/partition-" + System.currentTimeMillis());
+
+          } else {
+            logger.info("partition size is zero!");
           }
-
-//          List<byte[]> vals = stringJavaPairRDD.values().collect();
-
-          //stringJavaPairRDD.saveAsTextFile("s3n://mongodwh/spark-backup/" + dateString + "/" + topics[0] + "/" + "/partition-" + System.currentTimeMillis());
-//          stringJavaPairRDD.saveAsHadoopFile("s3n://mongodwh/spark-backup/" + dateString + "/" + topic + "/" + "/partition-" + System.currentTimeMillis(),
-//                  NullWritable.class,
-//                  BytesWritable.class,
-//                  SequenceFileOutputFormat.class);
-          stringJavaPairRDD.saveAsTextFile("s3n://mongodwh/spark-backup/" + dateString + "/" + topic + "/" + "/partition-" + System.currentTimeMillis());
-
-        } else{
-          logger.info("partition size is zero!");
+          return null;
         }
-        return null;
-      }
-    });
+      });
+    }
 
     jscc.start();
     jscc.awaitTermination();
