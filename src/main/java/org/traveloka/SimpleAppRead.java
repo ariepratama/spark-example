@@ -8,6 +8,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.PairFunction;
 import org.traveloka.exception.NoTopicException;
 import scala.Tuple2;
@@ -26,6 +27,17 @@ public class SimpleAppRead {
     public Tuple2<String, byte[]> call(Tuple2<Text, BytesWritable> textBytesWritableTuple2) throws Exception {
       return new Tuple2<String, byte[]>(textBytesWritableTuple2._1().toString(), textBytesWritableTuple2._2.getBytes());
     }
+  }
+
+
+
+  private static void logRdd(JavaPairRDD<String, byte[]> rdd, String tag){
+    List<Tuple2<String, byte[]>> dataset = rdd.collect();
+    logger.info("-------------------------------------------------------");
+    logger.info("Number of Retrieved dataset: " + dataset.size());
+    logger.info("-------------------------------------------------------");
+    for(Tuple2<String, byte[]> datum: dataset)
+      logger.info("["+ tag + "] key is=" + datum._1() + "value is=" + new String(datum._2()));
   }
 
   public static void main(String args[]) throws Exception {
@@ -47,7 +59,7 @@ public class SimpleAppRead {
 //    String timestamp = args[1];
 
     JavaSparkContext sc = new JavaSparkContext(conf);
-    JavaPairRDD<String, byte[]> rdd = null;
+    JavaPairRDD<String, byte[]> rdd;
     if (! readAsHadoopFile)
       rdd = sc.textFile("s3n://mongodwh/spark-backup/" + StreamEventBackup.dateString + "/" + topic + "/*").mapToPair(new PairFunction<String, String, byte[]>() {
         @Override
@@ -57,27 +69,25 @@ public class SimpleAppRead {
       });
     else {
       JavaPairRDD<Text, BytesWritable> rddTemp = sc.sequenceFile("s3n://mongodwh/spark-backup/" + StreamEventBackup.dateString + "/" + topic + "/*",
-//              SequenceFileInputFormat.class,
               Text.class,
               BytesWritable.class);
       rdd = rddTemp.mapToPair(new ConvertToNative());
     }
+    logRdd(rdd,"COLLECTED");
 
-    List<Tuple2<String, byte[]>> data  = rdd.collect();
-    logger.info("#############rdd size#############: " + data.size());
-    for (Tuple2<String, byte[]> datum: data){
-      logger.info("**********>>>>" + datum._1() + ":" + new String(datum._2()));
-    }
-//    JavaPairRDD<byte[], byte[]> data = sc.hadoopFile("s3n://spark-backup/" + StreamEventBackup.dateString + "/" + topic + "/*",
-//            SequenceFileInputFormat.class,
-//            byte[].class,
-//            byte[].class);
-//
-//    List<byte[]> keys = data.values().collect();
-//    for (byte[] key : keys){
-//      String s = new String(key);
-//      logger.info("the value is: " + s);
-//    }
+    JavaPairRDD<String, byte[]> distinctRdd = rdd.distinct();
+    logRdd(distinctRdd,"DISTINCT");
+
+    JavaPairRDD<String, byte[]> sample1 = sc.parallelize(rdd.takeSample(false, 5)).mapToPair(new PairFunction<Tuple2<String, byte[]>, String, byte[]>() {
+      @Override
+      public Tuple2<String, byte[]> call(Tuple2<String, byte[]> stringTuple2) throws Exception {
+        return stringTuple2;
+      }
+    });
+    logRdd(sample1,"SAMPLING");
+
+    JavaPairRDD<String, byte[]> intersectedRdd = rdd.intersection(sample1);
+    logRdd(sample1,"INTERSECTION");
 
   }
 }
