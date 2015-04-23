@@ -112,8 +112,12 @@ public class SimpleAppRead {
     JavaPairRDD<String, byte[]> intersectedRdd = rdd.intersection(sample1);
     logRdd(intersectedRdd,"INTERSECTION");
 
-    JavaPairRDD<String, String> decodedRdd = rdd.mapToPair(new AvroValueDecode());
-    logRdd(decodedRdd, "DECODED");
+    List<byte[]> t = sample1.values().collect();
+    for (byte[] t1:t){
+      logger.info("the value: " + decoder.fromBytes(t1));
+    }
+//    JavaPairRDD<String, String> decodedRdd = rdd.mapToPair(new AvroValueDecode());
+//    logRdd(decodedRdd, "DECODED");
 
 
 
