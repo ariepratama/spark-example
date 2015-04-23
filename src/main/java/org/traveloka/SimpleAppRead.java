@@ -17,7 +17,7 @@ import java.util.List;
  */
 public class SimpleAppRead {
   private static Logger logger = Logger.getLogger(SimpleAppRead.class);
-
+  private static AvroDecoder decoder;
   // ----------------------------------------
   // UTILITY FUNCTIONS
   // ----------------------------------------
@@ -29,10 +29,6 @@ public class SimpleAppRead {
   }
 
   private static class AvroValueDecode implements PairFunction<Tuple2<String, byte[]>, String, String>{
-    private AvroDecoder decoder;
-    public AvroValueDecode(AvroDecoder _decoder){
-      decoder = _decoder;
-    }
     @Override
     public Tuple2<String, String> call(Tuple2<String, byte[]> stringBytesTuple2) throws Exception {
       return new Tuple2<String, String>(stringBytesTuple2._1(), decoder.fromBytes(stringBytesTuple2._2()));
@@ -73,7 +69,7 @@ public class SimpleAppRead {
     // handle s3 schema
 //    AmazonS3 s3Client = new AmazonS3Client(new BasicAWSCredentials(args[3], args[2]));
 //    S3Object s3Object = s3Client.getObject(new GetObjectRequest(args[1], args[2]));
-    AvroDecoder decoder = new AvroDecoder(SimpleAppRead.class.getResource("/schema/flight.visit.avsc").openStream());
+    decoder = new AvroDecoder(SimpleAppRead.class.getResource("/schema/flight.visit.avsc").openStream());
     boolean readAsHadoopFile = false;
 
     // optional params
@@ -116,7 +112,7 @@ public class SimpleAppRead {
     JavaPairRDD<String, byte[]> intersectedRdd = rdd.intersection(sample1);
     logRdd(intersectedRdd,"INTERSECTION");
 
-    JavaPairRDD<String, String> decodedRdd = rdd.mapToPair(new AvroValueDecode(decoder));
+    JavaPairRDD<String, String> decodedRdd = rdd.mapToPair(new AvroValueDecode());
     logRdd(decodedRdd, "DECODED");
 
 
