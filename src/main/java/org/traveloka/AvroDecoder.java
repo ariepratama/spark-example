@@ -23,19 +23,27 @@ public class AvroDecoder implements Decoder<String> {
   BinaryDecoder avroBinaryDecoder;
   GenericDatumReader<GenericRecord> avroEventReader;
   GenericRecord avroEvent;
-  public AvroDecoder(){
-    try {
-      sch = new Schema.Parser().parse(getClass().getResource("/schema/pageview.avsc").openStream());
-      avroDecoderFactory = DecoderFactory.get();
-      avroEventReader = new GenericDatumReader<GenericRecord>(sch);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+  public AvroDecoder() throws Exception{
+//    this(null);
+
+    InputStream ins = getClass().getResource("/schema/pageview.avsc").openStream();
+    sch = new Schema.Parser().parse(ins);
+    avroDecoderFactory = DecoderFactory.get();
+    avroEventReader = new GenericDatumReader<GenericRecord>(sch);
   }
 
-  public AvroDecoder(VerifiableProperties v){
+  public AvroDecoder(VerifiableProperties v) throws Exception{
     this();
 
+  }
+
+  public AvroDecoder(InputStream ins) throws Exception{
+    if (ins == null){
+      ins = getClass().getResource("/schema/pageview.avsc").openStream();
+    }
+    sch = new Schema.Parser().parse(ins);
+    avroDecoderFactory = DecoderFactory.get();
+    avroEventReader = new GenericDatumReader<GenericRecord>(sch);
   }
   @Override
   public String fromBytes(byte[] bytes) {

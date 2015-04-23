@@ -1,14 +1,16 @@
 package org.traveloka;
 
+import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.*;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.PairFunction;
 import org.traveloka.exception.NoTopicException;
 import scala.Tuple2;
@@ -31,13 +33,30 @@ public class SimpleAppRead {
     }
   }
 
-  private static void logRdd(JavaPairRDD<String, byte[]> rdd, String tag){
-    List<Tuple2<String, byte[]>> dataset = rdd.collect();
+  private static class AvroValueDecode implements PairFunction<Tuple2<String, byte[]>, String, String>{
+    private AvroDecoder decoder;
+    public AvroValueDecode(AvroDecoder _decoder){
+      decoder = _decoder;
+    }
+    @Override
+    public Tuple2<String, String> call(Tuple2<String, byte[]> stringBytesTuple2) throws Exception {
+      return new Tuple2<String, String>(stringBytesTuple2._1(), decoder.fromBytes(stringBytesTuple2._2()));
+    }
+  }
+
+  private static void logRdd(JavaPairRDD rdd, String tag){
+    List<Tuple2> dataset = rdd.collect();
     logger.info("-------------------------------------------------------");
     logger.info("Number of Retrieved dataset: " + dataset.size());
     logger.info("-------------------------------------------------------");
-    for(Tuple2<String, byte[]> datum: dataset)
-      logger.info("["+ tag + "] key is=" + datum._1() + "value is=" + new String(datum._2()));
+    for(Tuple2 datum: dataset) {
+      String msg = "[" + tag + "] key is=" + datum._1() + "value is=";
+      if (datum._2().getClass().toString().equals(byte[].class.toString()))
+        logger.info(msg + new String((byte[]) datum._2()));
+      else
+        logger.info(msg + datum._2().toString());
+    }
+
   }
 
   public static void main(String args[]) throws Exception {
@@ -45,12 +64,22 @@ public class SimpleAppRead {
     if (args.length < 1 || args[0] == null || args[0].isEmpty()){
       throw new NoTopicException("topic is empty");
     }
+    if (args.length < 2 || args[1] == null || args[1].isEmpty()){
+      throw new Exception("No Bucket Name");
+    }
+    if (args.length < 3 || args[2] == null || args[2].isEmpty()){
+      throw new Exception("no key provided");
+    }
 
+    // handle s3 schema
+    AmazonS3 s3Client = new AmazonS3Client(new ProfileCredentialsProvider());
+    S3Object s3Object = s3Client.getObject(new GetObjectRequest(args[1], args[2]));
+    AvroDecoder decoder = new AvroDecoder(s3Object.getObjectContent());
     boolean readAsHadoopFile = false;
 
     // optional params
-    if (args.length >= 2 && (args[1] != null || ! args[1].isEmpty())){
-      readAsHadoopFile = Boolean.parseBoolean(args[1]);
+    if (args.length >= 4 && (args[3] != null || ! args[3].isEmpty())){
+      readAsHadoopFile = Boolean.parseBoolean(args[3]);
     }
     String topic = args[0];
 
@@ -84,6 +113,11 @@ public class SimpleAppRead {
 
     JavaPairRDD<String, byte[]> intersectedRdd = rdd.intersection(sample1);
     logRdd(intersectedRdd,"INTERSECTION");
+
+    JavaPairRDD<String, String> decodedRdd = rdd.mapToPair(new AvroValueDecode(decoder));
+    logRdd(decodedRdd, "DECODED");
+
+
 
   }
 }
