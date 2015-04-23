@@ -126,7 +126,7 @@ public class StreamEventBackup {
       // by default save as hadoop file has already use current timestamp in file name
       messagePair.saveAsHadoopFiles("s3n://mongodwh/spark-backup/" + dateString + "/" + topic + "/" + "/partition-",
               "output",
-              NullWritable.class,
+              Text.class,
               BytesWritable.class,
               SequenceFileOutputFormat.class);
     }else {
