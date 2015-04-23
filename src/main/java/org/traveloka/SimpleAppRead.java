@@ -50,9 +50,9 @@ public class SimpleAppRead {
               SequenceFileInputFormat.class,
               String.class,
               byte[].class);
-    List<String> data  = rdd.keys().collect();
-    for (String datum: data){
-      logger.info("**********>>>>" + datum);
+    List<Tuple2<String, byte[]>> data  = rdd.collect();
+    for (Tuple2<String, byte[]> datum: data){
+      logger.info("**********>>>>" + datum._1() + ":" + new String(datum._2()));
     }
 //    JavaPairRDD<byte[], byte[]> data = sc.hadoopFile("s3n://spark-backup/" + StreamEventBackup.dateString + "/" + topic + "/*",
 //            SequenceFileInputFormat.class,
