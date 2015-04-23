@@ -1,5 +1,6 @@
 package org.traveloka;
 
+import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
@@ -72,7 +73,7 @@ public class SimpleAppRead {
     }
 
     // handle s3 schema
-    AmazonS3 s3Client = new AmazonS3Client(new ProfileCredentialsProvider());
+    AmazonS3 s3Client = new AmazonS3Client();
     S3Object s3Object = s3Client.getObject(new GetObjectRequest(args[1], args[2]));
     AvroDecoder decoder = new AvroDecoder(s3Object.getObjectContent());
     boolean readAsHadoopFile = false;
