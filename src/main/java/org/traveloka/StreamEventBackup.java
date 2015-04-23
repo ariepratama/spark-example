@@ -32,6 +32,11 @@ import java.util.Map;
  */
 public class StreamEventBackup {
 
+  public static class ConvertToWritableTypes implements PairFunction<Tuple2<String, byte[]>, Text, BytesWritable> {
+    public Tuple2<Text, BytesWritable> call(Tuple2<String, byte[]> record) {
+      return new Tuple2(new Text(record._1), new BytesWritable(record._2));
+    }
+  }
   // -----------------------------------
   // UTILITY CONFIG
   // -----------------------------------
@@ -132,12 +137,13 @@ public class StreamEventBackup {
             logger.info("key|********|" + key);
           }
           if (saveAsHadoopFile) {
+            JavaPairRDD<Text, BytesWritable> writeable = stringJavaPairRDD.mapToPair(new ConvertToWritableTypes());
             logger.info("----------SAVING AS HADOOP FILE----------");
-//            stringJavaPairRDD.saveAsHadoopFile("s3n://mongodwh/spark-backup/" + dateString + "/" + topic + "/" + "/partition-" + System.currentTimeMillis(),
-//                    Text.class,
-//                    BytesWritable.class,
-//                    SequenceFileOutputFormat.class);
-            stringJavaPairRDD.saveAsObjectFile("s3n://mongodwh/spark-backup/" + dateString + "/" + topic + "/" + "/partition-" + System.currentTimeMillis());
+            writeable.saveAsHadoopFile("s3n://mongodwh/spark-backup/" + dateString + "/" + topic + "/" + "/partition-" + System.currentTimeMillis(),
+                    Text.class,
+                    BytesWritable.class,
+                    SequenceFileOutputFormat.class);
+//            stringJavaPairRDD.saveAsObjectFile("s3n://mongodwh/spark-backup/" + dateString + "/" + topic + "/" + "/partition-" + System.currentTimeMillis());
 //            stringJavaPairRDD.saveAsHadoopFile("s3n://mongodwh/spark-backup/" + dateString + "/" + topic + "/" + "/partition-" + System.currentTimeMillis(),
 //                    NullWritable.class,
 //                    BytesWritable.class,

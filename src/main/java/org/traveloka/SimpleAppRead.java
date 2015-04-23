@@ -1,5 +1,7 @@
 package org.traveloka;
 
+import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.*;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
@@ -17,6 +19,14 @@ import java.util.List;
  */
 public class SimpleAppRead {
   private static Logger logger = Logger.getLogger(SimpleAppRead.class);
+
+  private static class ConvertToNative implements PairFunction<Tuple2<Text, BytesWritable>, String, byte[]>{
+
+    @Override
+    public Tuple2<String, byte[]> call(Tuple2<Text, BytesWritable> textBytesWritableTuple2) throws Exception {
+      return new Tuple2<String, byte[]>(textBytesWritableTuple2._1().toString(), textBytesWritableTuple2._2.getBytes());
+    }
+  }
 
   public static void main(String args[]) throws Exception {
     SparkConf conf = new SparkConf().setAppName(SimpleAppRead.class.getSimpleName());
@@ -45,11 +55,13 @@ public class SimpleAppRead {
           return new Tuple2<String, byte[]>(s, s.getBytes());
         }
       });
-    else
-      rdd = sc.sequenceFile("s3n://mongodwh/spark-backup/" + StreamEventBackup.dateString + "/" + topic + "/*",
+    else {
+      JavaPairRDD<Text, BytesWritable> rddTemp = sc.sequenceFile("s3n://mongodwh/spark-backup/" + StreamEventBackup.dateString + "/" + topic + "/*",
 //              SequenceFileInputFormat.class,
-              String.class,
-              byte[].class);
+              Text.class,
+              BytesWritable.class);
+      rdd = rddTemp.mapToPair(new ConvertToNative());
+    }
 
     List<Tuple2<String, byte[]>> data  = rdd.collect();
     logger.info("#############rdd size#############: " + data.size());
