@@ -51,6 +51,7 @@ public class SimpleAppRead {
               String.class,
               byte[].class);
     List<Tuple2<String, byte[]>> data  = rdd.collect();
+    logger.info("#############rdd size#############: " + data.size());
     for (Tuple2<String, byte[]> datum: data){
       logger.info("**********>>>>" + datum._1() + ":" + new String(datum._2()));
     }
