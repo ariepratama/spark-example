@@ -60,6 +60,7 @@ public class SimpleAppRead {
 
   }
 
+
   public static void main(String args[]) throws Exception {
     SparkConf conf = new SparkConf().setAppName(SimpleAppRead.class.getSimpleName());
     if (args.length < 1 || args[0] == null || args[0].isEmpty()){
@@ -71,16 +72,19 @@ public class SimpleAppRead {
     if (args.length < 3 || args[2] == null || args[2].isEmpty()){
       throw new Exception("no key provided");
     }
+    if (args.length < 4 || args[3] == null || args[3].isEmpty()){
+      throw new Exception("no key id provided");
+    }
 
     // handle s3 schema
-    AmazonS3 s3Client = new AmazonS3Client();
+    AmazonS3 s3Client = new AmazonS3Client(new BasicAWSCredentials(args[3], args[2]));
     S3Object s3Object = s3Client.getObject(new GetObjectRequest(args[1], args[2]));
     AvroDecoder decoder = new AvroDecoder(s3Object.getObjectContent());
     boolean readAsHadoopFile = false;
 
     // optional params
-    if (args.length >= 4 && (args[3] != null || ! args[3].isEmpty())){
-      readAsHadoopFile = Boolean.parseBoolean(args[3]);
+    if (args.length >= 5 && (args[4] != null || ! args[4].isEmpty())){
+      readAsHadoopFile = Boolean.parseBoolean(args[4]);
     }
     String topic = args[0];
 
