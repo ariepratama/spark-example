@@ -21,15 +21,15 @@ import java.util.List;
 public class SimpleAppRead {
   private static Logger logger = Logger.getLogger(SimpleAppRead.class);
 
+  // ----------------------------------------
+  // UTILITY FUNCTIONS
+  // ----------------------------------------
   private static class ConvertToNative implements PairFunction<Tuple2<Text, BytesWritable>, String, byte[]>{
-
     @Override
     public Tuple2<String, byte[]> call(Tuple2<Text, BytesWritable> textBytesWritableTuple2) throws Exception {
       return new Tuple2<String, byte[]>(textBytesWritableTuple2._1().toString(), textBytesWritableTuple2._2.getBytes());
     }
   }
-
-
 
   private static void logRdd(JavaPairRDD<String, byte[]> rdd, String tag){
     List<Tuple2<String, byte[]>> dataset = rdd.collect();
@@ -46,9 +46,6 @@ public class SimpleAppRead {
       throw new NoTopicException("topic is empty");
     }
 
-//    if (args.length < 2 || args[0] == null || args[0].isEmpty()){
-//      throw new Exception("argument 2 missing: fill with timestamp");
-//    }
     boolean readAsHadoopFile = false;
 
     // optional params
@@ -56,7 +53,6 @@ public class SimpleAppRead {
       readAsHadoopFile = Boolean.parseBoolean(args[1]);
     }
     String topic = args[0];
-//    String timestamp = args[1];
 
     JavaSparkContext sc = new JavaSparkContext(conf);
     JavaPairRDD<String, byte[]> rdd;
@@ -87,7 +83,7 @@ public class SimpleAppRead {
     logRdd(sample1,"SAMPLING");
 
     JavaPairRDD<String, byte[]> intersectedRdd = rdd.intersection(sample1);
-    logRdd(sample1,"INTERSECTION");
+    logRdd(intersectedRdd,"INTERSECTION");
 
   }
 }

@@ -136,21 +136,17 @@ public class StreamEventBackup {
           for (String key : keys) {
             logger.info("key|********|" + key);
           }
+          String filepath = "s3n://mongodwh/spark-backup/" + dateString + "/" + topic + "/" + "/partition-" + System.currentTimeMillis();
           if (saveAsHadoopFile) {
             JavaPairRDD<Text, BytesWritable> writeable = stringJavaPairRDD.mapToPair(new ConvertToWritableTypes());
             logger.info("----------SAVING AS HADOOP FILE----------");
-            writeable.saveAsHadoopFile("s3n://mongodwh/spark-backup/" + dateString + "/" + topic + "/" + "/partition-" + System.currentTimeMillis(),
+            writeable.saveAsHadoopFile(filepath,
                     Text.class,
                     BytesWritable.class,
                     SequenceFileOutputFormat.class);
-//            stringJavaPairRDD.saveAsObjectFile("s3n://mongodwh/spark-backup/" + dateString + "/" + topic + "/" + "/partition-" + System.currentTimeMillis());
-//            stringJavaPairRDD.saveAsHadoopFile("s3n://mongodwh/spark-backup/" + dateString + "/" + topic + "/" + "/partition-" + System.currentTimeMillis(),
-//                    NullWritable.class,
-//                    BytesWritable.class,
-//                    SequenceFileOutputFormat.class);
           } else {
             logger.info("----------SAVING AS TEXT FILE----------");
-            stringJavaPairRDD.saveAsTextFile("s3n://mongodwh/spark-backup/" + dateString + "/" + topic + "/" + "/partition-" + System.currentTimeMillis());
+            stringJavaPairRDD.saveAsTextFile(filepath);
           }
 
         } else {
@@ -159,6 +155,8 @@ public class StreamEventBackup {
         return null;
       }
     });
+
+
 
 
     jscc.start();
