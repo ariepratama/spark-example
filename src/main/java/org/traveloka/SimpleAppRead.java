@@ -46,10 +46,11 @@ public class SimpleAppRead {
         }
       });
     else
-      rdd = sc.hadoopFile("s3n://mongodwh/spark-backup/" + StreamEventBackup.dateString + "/" + topic + "/*",
-              SequenceFileInputFormat.class,
+      rdd = sc.sequenceFile("s3n://mongodwh/spark-backup/" + StreamEventBackup.dateString + "/" + topic + "/*",
+//              SequenceFileInputFormat.class,
               String.class,
               byte[].class);
+
     List<Tuple2<String, byte[]>> data  = rdd.collect();
     logger.info("#############rdd size#############: " + data.size());
     for (Tuple2<String, byte[]> datum: data){
