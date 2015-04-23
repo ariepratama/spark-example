@@ -1,0 +1,13 @@
+{"namespace": "tracking.pageview",
+ "type": "record",
+ "name": "pageview",
+ "fields": [
+     {"name": "IP", "type": ["string", "null"]},
+     {"name": "sessionId", "type": ["string", "null"]},
+     {"name": "cookieId", "type": ["string", "null"]},
+     {"name": "interface", "type": ["string", "null"]},
+     {"name": "intf", "type": ["string", "null"]},
+     {"name": "device", "type": ["string", "null"]},
+     {"name": "deviceType", "type": ["string", "null"]}
+ ]
+}
