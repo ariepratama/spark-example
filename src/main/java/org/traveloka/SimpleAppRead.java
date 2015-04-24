@@ -66,7 +66,7 @@ public class SimpleAppRead {
       if (byte[].class.toString().equals(datum._2().getClass().toString()))
         System.out.println(msg + new String((byte[]) datum._2()));
       else
-        System.out.println(msg + datum._2().toString());
+        System.out.println(msg + datum._2());
     }
   }
 
