@@ -15,6 +15,7 @@ import org.traveloka.exception.NoTopicException;
 import org.traveloka.helper.ArgValidationUtility;
 import scala.Tuple2;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -137,20 +138,27 @@ public class SimpleAppRead {
         return stringTuple2;
       }
     });
-    printRdd(sample1, "SAMPLING");
+    printRdd(sample1, "SAMPLING1");
     JavaPairRDD<String, byte[]> sample2 = sc.parallelize(rdd.takeSample(false, 5)).mapToPair(new PairFunction<Tuple2<String, byte[]>, String, byte[]>() {
       @Override
       public Tuple2<String, byte[]> call(Tuple2<String, byte[]> stringTuple2) throws Exception {
         return stringTuple2;
       }
     });
-    printRdd(sample2, "SAMPLING");
+    printRdd(sample2, "SAMPLING2");
+
+    List<Tuple2<String, byte[]>> t = new ArrayList<Tuple2<String, byte[]>>();
+    t.add(new Tuple2<String, byte[]>("direct", null));
+    JavaPairRDD<String, byte[]> tRdd = sc.parallelizePairs(t);
 
     JavaPairRDD<String, byte[]> intersectedRdd = sample1.intersection(sample2);
     printRdd(intersectedRdd, "INTERSECTION");
 
-    JavaPairRDD<String, byte[]> subtractRdd = sample1.subtractByKey(sample2);
-    printRdd(subtractRdd,"SUBTRACT");
+    JavaPairRDD<String, byte[]> subtractRdd = sample1.subtractByKey(tRdd);
+    printRdd(subtractRdd, "SUBTRACT");
+
+    JavaPairRDD<String, byte[]> unionRdd = sample1.union(tRdd);
+    printRdd(unionRdd, "UNION");
 
 //    List<byte[]> t = sample1.values().collect();
 //    for (byte[] t1:t){
