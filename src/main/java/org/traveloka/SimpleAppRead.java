@@ -148,7 +148,7 @@ public class SimpleAppRead {
     printRdd(sample2, "SAMPLING2");
 
     List<Tuple2<String, byte[]>> t = new ArrayList<Tuple2<String, byte[]>>();
-    t.add(new Tuple2<String, byte[]>("direct", null));
+    t.add(new Tuple2<String, byte[]>("direct", "asdfasdf".getBytes()));
     JavaPairRDD<String, byte[]> tRdd = sc.parallelizePairs(t);
 
     JavaPairRDD<String, byte[]> intersectedRdd = sample1.intersection(sample2);
