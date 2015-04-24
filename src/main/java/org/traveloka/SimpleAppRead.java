@@ -124,14 +124,24 @@ public class SimpleAppRead {
       }
     });
     logRdd(sample1,"SAMPLING");
+    JavaPairRDD<String, byte[]> sample2 = sc.parallelize(rdd.takeSample(false, 5)).mapToPair(new PairFunction<Tuple2<String, byte[]>, String, byte[]>() {
+      @Override
+      public Tuple2<String, byte[]> call(Tuple2<String, byte[]> stringTuple2) throws Exception {
+        return stringTuple2;
+      }
+    });
+    logRdd(sample2,"SAMPLING");
 
-    JavaPairRDD<String, byte[]> intersectedRdd = rdd.intersection(sample1);
+    JavaPairRDD<String, byte[]> intersectedRdd = sample1.intersection(sample2);
     logRdd(intersectedRdd,"INTERSECTION");
 
-    List<byte[]> t = rdd.values().collect();
-    for (byte[] t1:t){
-      logger.info("the value: " + decoder.fromBytes(t1));
-    }
+    JavaPairRDD<String, byte[]> subtractRdd = sample1.subtractByKey(sample2);
+    logRdd(intersectedRdd,"SUBTRACT");
+
+//    List<byte[]> t = sample1.values().collect();
+//    for (byte[] t1:t){
+//      logger.info("the value: " + decoder.fromBytes(t1));
+//    }
 //    JavaPairRDD<String, String> decodedRdd = rdd.mapToPair(new AvroValueDecode());
 //    logRdd(decodedRdd, "DECODED");
 
