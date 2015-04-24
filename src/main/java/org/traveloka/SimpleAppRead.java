@@ -55,6 +55,20 @@ public class SimpleAppRead {
 
   }
 
+  private static void printRdd(JavaPairRDD rdd, String tag){
+    List<Tuple2> dataset = rdd.collect();
+    System.out.println("-------------------------------------------------------");
+    System.out.println("Number of Retrieved dataset: " + dataset.size());
+    System.out.println("-------------------------------------------------------");
+    for(Tuple2 datum: dataset) {
+      String msg = "[" + tag + "] key is=" + datum._1() + "value is=";
+      if (datum._2().getClass().toString().equals(byte[].class.toString()))
+        System.out.println(msg + new String((byte[]) datum._2()));
+      else
+        System.out.println(msg + datum._2().toString());
+    }
+  }
+
 
   public static void main(String args[]) throws Exception {
     SparkConf conf = new SparkConf().setAppName(SimpleAppRead.class.getSimpleName());
@@ -112,10 +126,10 @@ public class SimpleAppRead {
               BytesWritable.class);
       rdd = rddTemp.mapToPair(new ConvertToNative());
     }
-    logRdd(rdd,"COLLECTED");
+    printRdd(rdd, "COLLECTED");
 
     JavaPairRDD<String, byte[]> distinctRdd = rdd.distinct();
-    logRdd(distinctRdd,"DISTINCT");
+    printRdd(distinctRdd, "DISTINCT");
 
     JavaPairRDD<String, byte[]> sample1 = sc.parallelize(rdd.takeSample(false, 5)).mapToPair(new PairFunction<Tuple2<String, byte[]>, String, byte[]>() {
       @Override
@@ -123,20 +137,20 @@ public class SimpleAppRead {
         return stringTuple2;
       }
     });
-    logRdd(sample1,"SAMPLING");
+    printRdd(sample1, "SAMPLING");
     JavaPairRDD<String, byte[]> sample2 = sc.parallelize(rdd.takeSample(false, 5)).mapToPair(new PairFunction<Tuple2<String, byte[]>, String, byte[]>() {
       @Override
       public Tuple2<String, byte[]> call(Tuple2<String, byte[]> stringTuple2) throws Exception {
         return stringTuple2;
       }
     });
-    logRdd(sample2,"SAMPLING");
+    printRdd(sample2, "SAMPLING");
 
     JavaPairRDD<String, byte[]> intersectedRdd = sample1.intersection(sample2);
-    logRdd(intersectedRdd,"INTERSECTION");
+    printRdd(intersectedRdd, "INTERSECTION");
 
     JavaPairRDD<String, byte[]> subtractRdd = sample1.subtractByKey(sample2);
-    logRdd(intersectedRdd,"SUBTRACT");
+    printRdd(subtractRdd,"SUBTRACT");
 
 //    List<byte[]> t = sample1.values().collect();
 //    for (byte[] t1:t){
