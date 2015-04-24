@@ -1,5 +1,9 @@
 package org.traveloka;
 
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.log4j.Logger;
@@ -8,6 +12,7 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.PairFunction;
 import org.traveloka.exception.NoTopicException;
+import org.traveloka.helper.ArgValidationUtility;
 import scala.Tuple2;
 
 import java.util.List;
@@ -53,33 +58,44 @@ public class SimpleAppRead {
 
   public static void main(String args[]) throws Exception {
     SparkConf conf = new SparkConf().setAppName(SimpleAppRead.class.getSimpleName());
-    if (args.length < 1 || args[0] == null || args[0].isEmpty()){
+
+    if (ArgValidationUtility.validate(args, 1)){
       throw new NoTopicException("topic is empty");
     }
-//    if (args.length < 2 || args[1] == null || args[1].isEmpty()){
-//      throw new Exception("No Bucket Name");
-//    }
-//    if (args.length < 3 || args[2] == null || args[2].isEmpty()){
-//      throw new Exception("no key provided");
-//    }
-//    if (args.length < 4 || args[3] == null || args[3].isEmpty()){
-//      throw new Exception("no key id provided");
-//    }
+
+    if (ArgValidationUtility.validate(args, 2)){
+      throw new Exception("No access id");
+    }
+
+    if (ArgValidationUtility.validate(args, 3)){
+      throw new Exception("no secret key provided");
+    }
+    if (ArgValidationUtility.validate(args, 4)){
+      throw new Exception("no bucket name provided");
+    }
+
+    if (ArgValidationUtility.validate(args, 4)){
+      throw new Exception("no bucket key provided");
+    }
+
+    if (ArgValidationUtility.validate(args, 5)){
+      throw new Exception("should the program read as hadoop file?");
+    }
 
     // handle s3 schema
-//    AmazonS3 s3Client = new AmazonS3Client(new BasicAWSCredentials(args[3], args[2]));
-//    S3Object s3Object = s3Client.getObject(new GetObjectRequest(args[1], args[2]));
-    decoder = new AvroDecoder(SimpleAppRead.class.getResource("/schema/flight.visit.avsc").openStream());
-    boolean readAsHadoopFile = false;
+//    decoder = new AvroDecoder(SimpleAppRead.class.getResource("/schema/flight.visit.avsc").openStream());
 
-    // optional params
-//    if (args.length >= 5 && (args[4] != null || ! args[4].isEmpty())){
-//      readAsHadoopFile = Boolean.parseBoolean(args[4]);
-//    }
-    if (args.length >= 2 && (args[1] != null || ! args[1].isEmpty())){
-      readAsHadoopFile = Boolean.parseBoolean(args[1]);
-    }
+
+
     String topic = args[0];
+    String accessId = args[1];
+    String secretKey = args[2];
+    String bucketName = args[3];
+    String bucketKey = args[4] + topic + ".avsc";
+    boolean readAsHadoopFile = Boolean.parseBoolean(args[5]);
+    AmazonS3Client s3Client = new AmazonS3Client(new BasicAWSCredentials(accessId, secretKey));
+    S3Object obj = s3Client.getObject(new GetObjectRequest(bucketName, bucketKey));
+    decoder = new AvroDecoder(obj.getObjectContent());
 
     JavaSparkContext sc = new JavaSparkContext(conf);
     JavaPairRDD<String, byte[]> rdd;
@@ -112,7 +128,7 @@ public class SimpleAppRead {
     JavaPairRDD<String, byte[]> intersectedRdd = rdd.intersection(sample1);
     logRdd(intersectedRdd,"INTERSECTION");
 
-    List<byte[]> t = sample1.values().collect();
+    List<byte[]> t = rdd.values().collect();
     for (byte[] t1:t){
       logger.info("the value: " + decoder.fromBytes(t1));
     }
