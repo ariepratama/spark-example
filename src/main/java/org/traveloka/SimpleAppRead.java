@@ -48,7 +48,7 @@ public class SimpleAppRead {
     logger.info("-------------------------------------------------------");
     for(Tuple2 datum: dataset) {
       String msg = "[" + tag + "] key is=" + datum._1() + "value is=";
-      if (datum._2().getClass().toString().equals(byte[].class.toString()))
+      if (byte[].class.toString().equals(datum._2().getClass().toString()))
         logger.info(msg + new String((byte[]) datum._2()));
       else
         logger.info(msg + datum._2().toString());
@@ -63,7 +63,7 @@ public class SimpleAppRead {
     System.out.println("-------------------------------------------------------");
     for(Tuple2 datum: dataset) {
       String msg = "[" + tag + "] key is=" + datum._1() + "value is=";
-      if (datum._2().getClass().toString().equals(byte[].class.toString()))
+      if (byte[].class.toString().equals(datum._2().getClass().toString()))
         System.out.println(msg + new String((byte[]) datum._2()));
       else
         System.out.println(msg + datum._2().toString());
