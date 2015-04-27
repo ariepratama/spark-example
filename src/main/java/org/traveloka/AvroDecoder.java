@@ -33,6 +33,14 @@ public class AvroDecoder implements Decoder<String>, Serializable {
     avroEventReader = new GenericDatumReader<GenericRecord>(sch);
   }
 
+  public AvroDecoder(AvroDecoder copy){
+    this.sch = copy.sch;
+    this.avroDecoderFactory = copy.avroDecoderFactory;
+    this.avroBinaryDecoder = copy.avroBinaryDecoder;
+    this.avroEventReader = copy.avroEventReader;
+    this.avroEvent = copy.avroEvent;
+  }
+
   public AvroDecoder(VerifiableProperties v) throws Exception{
     this();
 
@@ -54,6 +62,7 @@ public class AvroDecoder implements Decoder<String>, Serializable {
     try {
       avroEvent = avroEventReader.read(avroEvent, avroBinaryDecoder);
       res = avroEvent.toString();
+      System.out.println("decoded: " + res);
     } catch (IOException e) {
       e.printStackTrace();
     }

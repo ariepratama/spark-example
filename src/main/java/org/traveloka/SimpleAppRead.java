@@ -45,9 +45,8 @@ public class SimpleAppRead {
 
   private static class AvroValueOnlyDecode implements Function<byte[], String>{
     private AvroDecoder _d;
-    public AvroValueOnlyDecode(){}
     public AvroValueOnlyDecode(AvroDecoder decode){
-      this._d = decode;
+      this._d = new AvroDecoder(decode);
     }
     @Override
     public String call(byte[] bytes) throws Exception {
