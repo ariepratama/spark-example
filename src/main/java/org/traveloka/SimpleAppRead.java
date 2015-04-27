@@ -9,7 +9,9 @@ import org.apache.hadoop.io.Text;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.PairFunction;
 import org.traveloka.exception.NoTopicException;
 import org.traveloka.helper.ArgValidationUtility;
@@ -38,6 +40,14 @@ public class SimpleAppRead {
     @Override
     public Tuple2<String, String> call(Tuple2<String, byte[]> stringBytesTuple2) throws Exception {
       return new Tuple2<String, String>(stringBytesTuple2._1(), decoder.fromBytes(stringBytesTuple2._2()));
+    }
+  }
+
+  private static class AvroValueOnlyDecode implements Function<byte[], String>{
+
+    @Override
+    public String call(byte[] bytes) throws Exception {
+      return decoder.fromBytes(bytes);
     }
   }
 
@@ -127,7 +137,7 @@ public class SimpleAppRead {
               BytesWritable.class);
       rdd = rddTemp.mapToPair(new ConvertToNative());
     }
-    printRdd(rdd, "COLLECTED");
+//    printRdd(rdd, "COLLECTED");
 
     JavaPairRDD<String, byte[]> distinctRdd = rdd.distinct();
     printRdd(distinctRdd, "DISTINCT");
@@ -171,8 +181,14 @@ public class SimpleAppRead {
     JavaPairRDD leftJoinedRdd = t1Rdd.leftOuterJoin(unionRdd);
     printRdd(leftJoinedRdd, "LEFT JOIN");
 
-    JavaPairRDD decodedRdd = sample1.mapToPair(new AvroValueDecode());
-    printRdd(decodedRdd, "DECODED");
+//    JavaPairRDD decodedRdd = sample1.mapToPair(new AvroValueDecode());
+    JavaRDD<byte[]> rddTemp1 = sample1.values();
+    JavaRDD<String> decodedRdd = rddTemp1.map(new AvroValueOnlyDecode());
+    List<String> collected = decodedRdd.collect();
+    for (String s : collected){
+      System.out.println(s);
+    }
+//    printRdd(decodedRdd, "DECODED");
 
 //    JavaPairRDD<String, byte[]> leftJoinedRdd = unionRdd.leftOuterJoin(t1Rdd);
 
