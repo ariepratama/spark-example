@@ -47,7 +47,7 @@ public class SimpleAppRead {
     logger.info("Number of Retrieved dataset: " + dataset.size());
     logger.info("-------------------------------------------------------");
     for(Tuple2 datum: dataset) {
-      String msg = "[" + tag + "] key is=" + datum._1() + "value is=";
+      String msg = "[" + tag + "] key is= " + datum._1() + "value is= ";
       if (byte[].class.toString().equals(datum._2().getClass().toString()))
         logger.info(msg + new String((byte[]) datum._2()));
       else
@@ -62,7 +62,7 @@ public class SimpleAppRead {
     System.out.println("Number of Retrieved dataset: " + dataset.size());
     System.out.println("-------------------------------------------------------");
     for(Tuple2 datum: dataset) {
-      String msg = "[" + tag + "] key is=" + datum._1() + "value is=";
+      String msg = "[" + tag + "] key is= " + datum._1() + "value is= ";
       if (byte[].class.toString().equals(datum._2().getClass().toString()))
         System.out.println(msg + new String((byte[]) datum._2()));
       else
@@ -151,6 +151,14 @@ public class SimpleAppRead {
     t.add(new Tuple2<String, byte[]>("direct", "asdfasdf".getBytes()));
     JavaPairRDD<String, byte[]> tRdd = sc.parallelizePairs(t);
 
+    List<Tuple2<String, byte[]>> t1 = new ArrayList<Tuple2<String, byte[]>>();
+    t1.add(new Tuple2<String, byte[]>("adwords", "asdfasdf1".getBytes()));
+    t1.add(new Tuple2<String, byte[]>("google", "asdfasdf2".getBytes()));
+    t1.add(new Tuple2<String, byte[]>("halohalo", "asdfasdf3".getBytes()));
+    t1.add(new Tuple2<String, byte[]>("halohalo", "asdfasdf4".getBytes()));
+    JavaPairRDD<String, byte[]> t1Rdd = sc.parallelizePairs(t1);
+
+
     JavaPairRDD<String, byte[]> intersectedRdd = sample1.intersection(sample2);
     printRdd(intersectedRdd, "INTERSECTION");
 
@@ -159,6 +167,11 @@ public class SimpleAppRead {
 
     JavaPairRDD<String, byte[]> unionRdd = sample1.union(tRdd);
     printRdd(unionRdd, "UNION");
+
+    JavaPairRDD leftJoinedRdd = t1Rdd.leftOuterJoin(unionRdd);
+    printRdd(leftJoinedRdd, "LEFT JOIN");
+
+//    JavaPairRDD<String, byte[]> leftJoinedRdd = unionRdd.leftOuterJoin(t1Rdd);
 
 //    List<byte[]> t = sample1.values().collect();
 //    for (byte[] t1:t){
