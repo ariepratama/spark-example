@@ -171,6 +171,9 @@ public class SimpleAppRead {
     JavaPairRDD leftJoinedRdd = t1Rdd.leftOuterJoin(unionRdd);
     printRdd(leftJoinedRdd, "LEFT JOIN");
 
+    JavaPairRDD decodedRdd = sample1.mapToPair(new AvroValueDecode());
+    printRdd(decodedRdd, "DECODED");
+
 //    JavaPairRDD<String, byte[]> leftJoinedRdd = unionRdd.leftOuterJoin(t1Rdd);
 
 //    List<byte[]> t = sample1.values().collect();
