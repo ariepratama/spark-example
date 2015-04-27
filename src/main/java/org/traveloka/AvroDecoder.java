@@ -12,12 +12,13 @@ import org.apache.avro.util.ByteBufferInputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
 /**
  * Created by ariesutiono on 14/04/15.
  */
-public class AvroDecoder implements Decoder<String> {
+public class AvroDecoder implements Decoder<String>, Serializable {
   Schema sch;
   DecoderFactory avroDecoderFactory;
   BinaryDecoder avroBinaryDecoder;
