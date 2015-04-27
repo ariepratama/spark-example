@@ -44,10 +44,14 @@ public class SimpleAppRead {
   }
 
   private static class AvroValueOnlyDecode implements Function<byte[], String>{
-
+    private AvroDecoder _d;
+    public AvroValueOnlyDecode(){}
+    public AvroValueOnlyDecode(AvroDecoder decode){
+      this._d = decode;
+    }
     @Override
     public String call(byte[] bytes) throws Exception {
-      return decoder.fromBytes(bytes);
+      return _d.fromBytes(bytes);
     }
   }
 
@@ -183,7 +187,7 @@ public class SimpleAppRead {
 
 //    JavaPairRDD decodedRdd = sample1.mapToPair(new AvroValueDecode());
     JavaRDD<byte[]> rddTemp1 = sample1.values();
-    JavaRDD<String> decodedRdd = rddTemp1.map(new AvroValueOnlyDecode());
+    JavaRDD<String> decodedRdd = rddTemp1.map(new AvroValueOnlyDecode(decoder));
     List<String> collected = decodedRdd.collect();
     for (String s : collected){
       System.out.println(s);
