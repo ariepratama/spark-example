@@ -7,8 +7,10 @@ import com.amazonaws.services.s3.model.S3Object;
 import kafka.serializer.DefaultDecoder;
 import kafka.serializer.StringDecoder;
 import org.apache.avro.Schema;
+import org.apache.avro.hadoop.io.AvroKeyValue;
 import org.apache.avro.mapred.AvroJob;
 import org.apache.avro.mapred.AvroOutputFormat;
+import org.apache.avro.mapred.AvroValue;
 import org.apache.avro.mapreduce.AvroKeyValueOutputFormat;
 import org.apache.avro.mapreduce.AvroSequenceFileOutputFormat;
 import org.apache.hadoop.io.BytesWritable;
@@ -188,7 +190,7 @@ public class StreamEventBackup {
 
             writeable.saveAsNewAPIHadoopFile(filepath,
                     Text.class,
-                    BytesWritable.class,
+                    AvroKeyValue.class,
                     AvroSequenceFileOutputFormat.class,
                     hadoopJobConf);
 
