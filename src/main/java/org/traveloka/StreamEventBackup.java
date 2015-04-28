@@ -112,15 +112,17 @@ public class StreamEventBackup {
     //process arguments
 //    final String[] topics = args[0].split(",");
 
-    final String accessId = args[3];
-    final String secretKey = args[4];
-    final String bucketName = args[5];
-    final String bucketKey = args[6];
+
 
 
     final boolean saveAsHadoopFile = Boolean.parseBoolean(args[2]);
     final String topic = args[0];
     int nThreads = Integer.parseInt(args[1]);
+
+    final String accessId = args[3];
+    final String secretKey = args[4];
+    final String bucketName = args[5];
+    final String bucketKey = args[6] + topic + ".avsc";
 
 
     Map<String, Integer> topicMap = new HashMap<String, Integer>();
