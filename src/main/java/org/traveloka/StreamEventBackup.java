@@ -178,22 +178,22 @@ public class StreamEventBackup {
           if (saveAsHadoopFile) {
             JavaPairRDD<Text, BytesWritable> writeable = stringJavaPairRDD.mapToPair(new ConvertToWritableTypes());
             logger.info("----------SAVING AS HADOOP FILE----------");
-//            writeable.saveAsHadoopFile(filepath,
-//                    Text.class,
-//                    BytesWritable.class,
-//                    AvroOutputFormat.class);
-            AmazonS3Client s3Client = new AmazonS3Client(new BasicAWSCredentials(accessId, secretKey));
-            S3Object obj = s3Client.getObject(new GetObjectRequest(bucketName, bucketKey));
-
-            JobConf hadoopJobConf = new JobConf();
-            AvroJob.setInputSchema(hadoopJobConf, Schema.create(Schema.Type.BYTES));
-            AvroJob.setOutputSchema(hadoopJobConf, new Schema.Parser().parse(obj.getObjectContent()));
-
-            writeable.saveAsNewAPIHadoopFile(filepath,
+            writeable.saveAsHadoopFile(filepath,
                     Text.class,
-                    AvroKeyValue.class,
-                    AvroKeyOutputFormat.class,
-                    hadoopJobConf);
+                    BytesWritable.class,
+                    SequenceFileOutputFormat.class);
+//            AmazonS3Client s3Client = new AmazonS3Client(new BasicAWSCredentials(accessId, secretKey));
+//            S3Object obj = s3Client.getObject(new GetObjectRequest(bucketName, bucketKey));
+//
+//            JobConf hadoopJobConf = new JobConf();
+//            AvroJob.setInputSchema(hadoopJobConf, Schema.create(Schema.Type.BYTES));
+//            AvroJob.setOutputSchema(hadoopJobConf, new Schema.Parser().parse(obj.getObjectContent()));
+//
+//            writeable.saveAsNewAPIHadoopFile(filepath,
+//                    Text.class,
+//                    AvroKeyValue.class,
+//                    AvroKeyOutputFormat.class,
+//                    hadoopJobConf);
 
 
 
