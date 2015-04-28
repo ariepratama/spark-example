@@ -26,6 +26,7 @@ import org.traveloka.exception.NoTopicException;
 import org.traveloka.helper.ArgValidationUtility;
 import scala.Tuple2;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
@@ -213,10 +214,12 @@ public class SimpleAppRead {
 
       @Override
       public String call(Tuple2<String, byte[]> stringTuple2) throws Exception {
-        AmazonS3Client s3Client = new AmazonS3Client(new BasicAWSCredentials(accessId, secretKey));
-        S3Object obj = s3Client.getObject(new GetObjectRequest(bucketName, bucketKey));
+//        AmazonS3Client s3Client = new AmazonS3Client(new BasicAWSCredentials(accessId, secretKey));
+//        S3Object obj = s3Client.getObject(new GetObjectRequest(bucketName, bucketKey));
+        File obj = new File("/schema/"+topic+".avsc");
         if (sch == null) {
-          sch = new Schema.Parser().parse(obj.getObjectContent());
+//          sch = new Schema.Parser().parse(obj.getObjectContent());
+          sch = new Schema.Parser().parse(obj);
         }
         avroEventReader = new GenericDatumReader<GenericRecord>(sch);
         avroBinaryDecoder = DecoderFactory.get().binaryDecoder(new ByteBufferInputStream(Lists.newArrayList(ByteBuffer.wrap(stringTuple2._2()))), avroBinaryDecoder);
