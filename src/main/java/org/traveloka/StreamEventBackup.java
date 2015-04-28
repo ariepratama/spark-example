@@ -2,7 +2,9 @@ package org.traveloka;
 
 import kafka.serializer.DefaultDecoder;
 import kafka.serializer.StringDecoder;
+import org.apache.avro.mapred.AvroKey;
 import org.apache.avro.mapred.AvroOutputFormat;
+import org.apache.avro.mapred.AvroValue;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.ObjectWritable;
@@ -141,8 +143,8 @@ public class StreamEventBackup {
             JavaPairRDD<Text, BytesWritable> writeable = stringJavaPairRDD.mapToPair(new ConvertToWritableTypes());
             logger.info("----------SAVING AS HADOOP FILE----------");
             writeable.saveAsHadoopFile(filepath,
-                    Text.class,
-                    BytesWritable.class,
+                    AvroKey.class,
+                    AvroValue.class,
                     AvroOutputFormat.class);
           } else {
             logger.info("----------SAVING AS TEXT FILE----------");
