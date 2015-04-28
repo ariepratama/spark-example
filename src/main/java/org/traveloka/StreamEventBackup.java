@@ -2,6 +2,7 @@ package org.traveloka;
 
 import kafka.serializer.DefaultDecoder;
 import kafka.serializer.StringDecoder;
+import org.apache.avro.mapred.AvroOutputFormat;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.ObjectWritable;
@@ -142,7 +143,7 @@ public class StreamEventBackup {
             writeable.saveAsHadoopFile(filepath,
                     Text.class,
                     BytesWritable.class,
-                    SequenceFileOutputFormat.class);
+                    AvroOutputFormat.class);
           } else {
             logger.info("----------SAVING AS TEXT FILE----------");
             stringJavaPairRDD.saveAsTextFile(filepath);
