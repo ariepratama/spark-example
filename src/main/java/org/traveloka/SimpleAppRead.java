@@ -8,10 +8,8 @@ import com.google.common.collect.Lists;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
-import org.apache.avro.hadoop.io.AvroKeyValue;
 import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.DecoderFactory;
-import org.apache.avro.mapred.AvroValue;
 import org.apache.avro.util.ByteBufferInputStream;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
@@ -26,7 +24,6 @@ import org.traveloka.exception.NoTopicException;
 import org.traveloka.helper.ArgValidationUtility;
 import scala.Tuple2;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
@@ -83,29 +80,25 @@ public class SimpleAppRead {
   }
 
   private static class AvroTrytoDecode implements Serializable{
-//    String accessId;
-//    String accessKey;
-//    String bucketName;
-//    String bucketKey;
-
-//    Schema sch;
-//    DecoderFactory avroDecoderFactory;
+    Schema sch;
     BinaryDecoder avroBinaryDecoder;
     GenericDatumReader<GenericRecord> avroEventReader;
     GenericRecord avroEvent;
     public AvroTrytoDecode(String accessId, String accessKey, String bucketName, String bucketKey) throws IOException {
       AmazonS3Client s3Client = new AmazonS3Client(new BasicAWSCredentials(accessId, accessKey));
       S3Object obj = s3Client.getObject(new GetObjectRequest(bucketName, bucketKey));
-      avroEventReader = new GenericDatumReader<GenericRecord>(new Schema.Parser().parse(obj.getObjectContent()));
+      sch = new Schema.Parser().parse(obj.getObjectContent());
+
     }
 
     public String fromBytes(byte[] bytes){
       String res = "null";
+      avroEventReader = new GenericDatumReader<GenericRecord>(sch);
       avroBinaryDecoder = DecoderFactory.get().binaryDecoder(new ByteBufferInputStream(Lists.newArrayList(ByteBuffer.wrap(bytes))),
               avroBinaryDecoder);
       try {
         avroEvent = avroEventReader.read(avroEvent, avroBinaryDecoder);
-        res = avroEvent.toString();
+        res = avroEvent.get("source").toString();
         System.out.println("decoded String to: " + res);
       } catch (IOException e) {
         e.printStackTrace();
@@ -206,32 +199,30 @@ public class SimpleAppRead {
     }
 //    printRdd(rdd, "COLLECTED");
 
-    JavaRDD<String> testRdd = rdd.sample(false, 5).map(new Function<Tuple2<String, byte[]>, String>() {
-      Schema sch;
-      BinaryDecoder avroBinaryDecoder;
-      GenericDatumReader<GenericRecord> avroEventReader;
-      GenericRecord avroEvent;
+//    AmazonS3Client s3Client = new AmazonS3Client(new BasicAWSCredentials(accessId, secretKey));
+//    S3Object obj = s3Client.getObject(new GetObjectRequest(bucketName, bucketKey));
 
-      @Override
-      public String call(Tuple2<String, byte[]> stringTuple2) throws Exception {
-//        AmazonS3Client s3Client = new AmazonS3Client(new BasicAWSCredentials(accessId, secretKey));
-//        S3Object obj = s3Client.getObject(new GetObjectRequest(bucketName, bucketKey));
-        File obj = new File("/schema/"+topic+".avsc");
-        if (sch == null) {
-//          sch = new Schema.Parser().parse(obj.getObjectContent());
-          sch = new Schema.Parser().parse(obj);
-        }
-        avroEventReader = new GenericDatumReader<GenericRecord>(sch);
-        avroBinaryDecoder = DecoderFactory.get().binaryDecoder(new ByteBufferInputStream(Lists.newArrayList(ByteBuffer.wrap(stringTuple2._2()))), avroBinaryDecoder);
-        avroEvent = avroEventReader.read(avroEvent, avroBinaryDecoder);
-
-        return avroEvent.get("source").toString();
-      }
-    });
-    List<String> list = testRdd.collect();
-    for(String s: list){
-      System.out.println(s);
-    }
+    final Schema sch = new Schema.Parser().parse(obj.getObjectContent());
+//    JavaRDD<String> testRdd = rdd.sample(false, 5).map(new Function<Tuple2<String, byte[]>, String>() {
+//
+//      BinaryDecoder avroBinaryDecoder;
+//      GenericDatumReader<GenericRecord> avroEventReader;
+//      GenericRecord avroEvent;
+//
+//      @Override
+//      public String call(Tuple2<String, byte[]> stringTuple2) throws Exception {
+//
+//        avroEventReader = new GenericDatumReader<GenericRecord>(sch);
+//        avroBinaryDecoder = DecoderFactory.get().binaryDecoder(new ByteBufferInputStream(Lists.newArrayList(ByteBuffer.wrap(stringTuple2._2()))), avroBinaryDecoder);
+//        avroEvent = avroEventReader.read(avroEvent, avroBinaryDecoder);
+//
+//        return avroEvent.get("source").toString();
+//      }
+//    });
+//    List<String> list = testRdd.collect();
+//    for(String s: list){
+//      System.out.println(s);
+//    }
 
     JavaPairRDD<String, byte[]> distinctRdd = rdd.distinct();
     printRdd(distinctRdd, "DISTINCT");
