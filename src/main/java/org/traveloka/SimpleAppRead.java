@@ -4,6 +4,13 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
+import com.google.common.collect.Lists;
+import org.apache.avro.Schema;
+import org.apache.avro.generic.GenericDatumReader;
+import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.io.BinaryDecoder;
+import org.apache.avro.io.DecoderFactory;
+import org.apache.avro.util.ByteBufferInputStream;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.log4j.Logger;
@@ -17,6 +24,9 @@ import org.traveloka.exception.NoTopicException;
 import org.traveloka.helper.ArgValidationUtility;
 import scala.Tuple2;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,20 +47,65 @@ public class SimpleAppRead {
   }
 
   private static class AvroValueDecode implements PairFunction<Tuple2<String, byte[]>, String, String>{
+    AvroTrytoDecode trytoDecode;
+    public AvroValueDecode(String accessId, String accessKey, String bucketName, String bucketKey) throws IOException {
+      trytoDecode = new AvroTrytoDecode(accessId, accessKey, bucketName, bucketKey);
+    }
+
     @Override
     public Tuple2<String, String> call(Tuple2<String, byte[]> stringBytesTuple2) throws Exception {
-      return new Tuple2<String, String>(stringBytesTuple2._1(), decoder.fromBytes(stringBytesTuple2._2()));
+      return new Tuple2<String, String>(stringBytesTuple2._1(), trytoDecode.fromBytes(stringBytesTuple2._2()));
     }
   }
 
   private static class AvroValueOnlyDecode implements Function<byte[], String>{
-    private AvroDecoder _d;
-    public AvroValueOnlyDecode(AvroDecoder decode){
-      this._d = new AvroDecoder(decode);
+//    String accessId;
+//    String accessKey;
+//    String bucketName;
+//    String bucketKey;
+    AvroTrytoDecode trytoDecode;
+    public AvroValueOnlyDecode(String accessId, String accessKey, String bucketName, String bucketKey) throws IOException {
+//      this.accessId = accessId;
+//      this.accessKey = accessKey;
+//      this.bucketName = bucketName;
+//      this.bucketKey = bucketKey;
+      trytoDecode = new AvroTrytoDecode(accessId, accessKey, bucketName, bucketKey);
     }
     @Override
     public String call(byte[] bytes) throws Exception {
-      return _d.fromBytes(bytes);
+      return trytoDecode.fromBytes(bytes);
+    }
+  }
+
+  private static class AvroTrytoDecode implements Serializable{
+//    String accessId;
+//    String accessKey;
+//    String bucketName;
+//    String bucketKey;
+
+//    Schema sch;
+//    DecoderFactory avroDecoderFactory;
+    BinaryDecoder avroBinaryDecoder;
+    GenericDatumReader<GenericRecord> avroEventReader;
+    GenericRecord avroEvent;
+    public AvroTrytoDecode(String accessId, String accessKey, String bucketName, String bucketKey) throws IOException {
+      AmazonS3Client s3Client = new AmazonS3Client(new BasicAWSCredentials(accessId, accessKey));
+      S3Object obj = s3Client.getObject(new GetObjectRequest(bucketName, bucketKey));
+      avroEventReader = new GenericDatumReader<GenericRecord>(new Schema.Parser().parse(obj.getObjectContent()));
+    }
+
+    public String fromBytes(byte[] bytes){
+      String res = "null";
+      avroBinaryDecoder = DecoderFactory.get().binaryDecoder(new ByteBufferInputStream(Lists.newArrayList(ByteBuffer.wrap(bytes))),
+              avroBinaryDecoder);
+      try {
+        avroEvent = avroEventReader.read(avroEvent, avroBinaryDecoder);
+        res = avroEvent.toString();
+        System.out.println("decoded String to: " + res);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+      return res;
     }
   }
 
@@ -184,13 +239,13 @@ public class SimpleAppRead {
     JavaPairRDD leftJoinedRdd = t1Rdd.leftOuterJoin(unionRdd);
     printRdd(leftJoinedRdd, "LEFT JOIN");
 
-//    JavaPairRDD decodedRdd = sample1.mapToPair(new AvroValueDecode());
-    JavaRDD<byte[]> rddTemp1 = sample1.values();
-    JavaRDD<String> decodedRdd = rddTemp1.map(new AvroValueOnlyDecode(decoder));
-    List<String> collected = decodedRdd.collect();
-    for (String s : collected){
-      System.out.println(s);
-    }
+    JavaPairRDD<String, String> test1 = sample1.mapToPair(new AvroValueDecode(accessId, secretKey, bucketName, bucketKey));
+    printRdd(test1, "DECODE");
+//    List<Tuple2<String, byte[]>> collected = rdd.collect();
+
+
+
+
 //    printRdd(decodedRdd, "DECODED");
 
 //    JavaPairRDD<String, byte[]> leftJoinedRdd = unionRdd.leftOuterJoin(t1Rdd);

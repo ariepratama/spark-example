@@ -27,7 +27,7 @@ public class AvroDecoder implements Decoder<String>, Serializable {
   public AvroDecoder() throws Exception{
 //    this(null);
 
-    InputStream ins = getClass().getResource("/schema/pageview.avsc").openStream();
+    InputStream ins = getClass().getResource("/schema/flight.visit.avsc").openStream();
     sch = new Schema.Parser().parse(ins);
     avroDecoderFactory = DecoderFactory.get();
     avroEventReader = new GenericDatumReader<GenericRecord>(sch);

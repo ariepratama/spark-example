@@ -77,7 +77,6 @@ public class StreamEventBackup {
       throw new NoThreadException("number of threads is empty");
     }
 
-
     // optional params
     if (args.length < 3 || args[2] == null || args[2].isEmpty()){
       throw new Exception("fill argument 3 with boolean that indicates if the file should be saved as hadoop file");
