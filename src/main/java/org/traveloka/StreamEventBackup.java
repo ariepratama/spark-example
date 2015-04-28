@@ -11,6 +11,7 @@ import org.apache.avro.hadoop.io.AvroKeyValue;
 import org.apache.avro.mapred.AvroJob;
 import org.apache.avro.mapred.AvroOutputFormat;
 import org.apache.avro.mapred.AvroValue;
+import org.apache.avro.mapreduce.AvroKeyOutputFormat;
 import org.apache.avro.mapreduce.AvroKeyValueOutputFormat;
 import org.apache.avro.mapreduce.AvroSequenceFileOutputFormat;
 import org.apache.hadoop.io.BytesWritable;
@@ -191,7 +192,7 @@ public class StreamEventBackup {
             writeable.saveAsNewAPIHadoopFile(filepath,
                     Text.class,
                     AvroKeyValue.class,
-                    AvroSequenceFileOutputFormat.class,
+                    AvroKeyOutputFormat.class,
                     hadoopJobConf);
 
 
