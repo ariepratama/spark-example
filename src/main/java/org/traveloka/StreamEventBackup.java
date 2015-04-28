@@ -1,12 +1,21 @@
 package org.traveloka;
 
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
 import kafka.serializer.DefaultDecoder;
 import kafka.serializer.StringDecoder;
+import org.apache.avro.Schema;
+import org.apache.avro.mapred.AvroJob;
 import org.apache.avro.mapred.AvroOutputFormat;
+import org.apache.avro.mapreduce.AvroKeyValueOutputFormat;
+import org.apache.avro.mapreduce.AvroSequenceFileOutputFormat;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
@@ -22,6 +31,7 @@ import org.apache.spark.streaming.kafka.KafkaUtils;
 import org.joda.time.DateTime;
 import org.traveloka.exception.NoThreadException;
 import org.traveloka.exception.NoTopicException;
+import org.traveloka.helper.ArgValidationUtility;
 import scala.Tuple2;
 
 import java.util.HashMap;
@@ -83,8 +93,31 @@ public class StreamEventBackup {
       throw new Exception("fill argument 3 with boolean that indicates if the file should be saved as hadoop file");
     }
 
+    if (ArgValidationUtility.validate(args, 4)){
+      throw new Exception("fill argument 4 with access id");
+    }
+
+    if (ArgValidationUtility.validate(args, 5)){
+      throw new Exception("fill argument 5 with secret key");
+    }
+
+    if (ArgValidationUtility.validate(args, 6)){
+      throw new Exception("fill argument 6 with bucket name");
+    }
+
+    if (ArgValidationUtility.validate(args, 7)){
+      throw new Exception("fill argument 7 with bucket key");
+    }
+
     //process arguments
 //    final String[] topics = args[0].split(",");
+
+    final String accessId = args[3];
+    final String secretKey = args[4];
+    final String bucketName = args[5];
+    final String bucketKey = args[6];
+
+
     final boolean saveAsHadoopFile = Boolean.parseBoolean(args[2]);
     final String topic = args[0];
     int nThreads = Integer.parseInt(args[1]);
@@ -140,10 +173,25 @@ public class StreamEventBackup {
           if (saveAsHadoopFile) {
             JavaPairRDD<Text, BytesWritable> writeable = stringJavaPairRDD.mapToPair(new ConvertToWritableTypes());
             logger.info("----------SAVING AS HADOOP FILE----------");
-            writeable.saveAsHadoopFile(filepath,
+//            writeable.saveAsHadoopFile(filepath,
+//                    Text.class,
+//                    BytesWritable.class,
+//                    AvroOutputFormat.class);
+            AmazonS3Client s3Client = new AmazonS3Client(new BasicAWSCredentials(accessId, secretKey));
+            S3Object obj = s3Client.getObject(new GetObjectRequest(bucketName, bucketKey));
+
+            JobConf hadoopJobConf = new JobConf();
+            AvroJob.setInputSchema(hadoopJobConf, Schema.create(Schema.Type.BYTES));
+            AvroJob.setOutputSchema(hadoopJobConf, new Schema.Parser().parse(obj.getObjectContent()));
+
+            writeable.saveAsNewAPIHadoopFile(filepath,
                     Text.class,
                     BytesWritable.class,
-                    AvroOutputFormat.class);
+                    AvroSequenceFileOutputFormat.class,
+                    hadoopJobConf);
+
+
+
           } else {
             logger.info("----------SAVING AS TEXT FILE----------");
             stringJavaPairRDD.saveAsTextFile(filepath);
