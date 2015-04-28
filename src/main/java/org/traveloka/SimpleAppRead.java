@@ -205,7 +205,7 @@ public class SimpleAppRead {
     }
 //    printRdd(rdd, "COLLECTED");
 
-    JavaRDD<String> testRdd = rdd.map(new Function<Tuple2<String, byte[]>, String>() {
+    JavaRDD<String> testRdd = rdd.sample(false, 5).map(new Function<Tuple2<String, byte[]>, String>() {
       Schema sch;
       BinaryDecoder avroBinaryDecoder;
       GenericDatumReader<GenericRecord> avroEventReader;
