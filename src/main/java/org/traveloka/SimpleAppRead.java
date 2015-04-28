@@ -8,8 +8,10 @@ import com.google.common.collect.Lists;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.hadoop.io.AvroKeyValue;
 import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.DecoderFactory;
+import org.apache.avro.mapred.AvroValue;
 import org.apache.avro.util.ByteBufferInputStream;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
@@ -45,6 +47,8 @@ public class SimpleAppRead {
       return new Tuple2<String, byte[]>(textBytesWritableTuple2._1().toString(), textBytesWritableTuple2._2.getBytes());
     }
   }
+
+
 
   private static class AvroValueDecode implements PairFunction<Tuple2<String, byte[]>, String, String>{
     AvroTrytoDecode trytoDecode;
@@ -170,11 +174,11 @@ public class SimpleAppRead {
 
 
 
-    String topic = args[0];
-    String accessId = args[1];
-    String secretKey = args[2];
-    String bucketName = args[3];
-    String bucketKey = args[4] + topic + ".avsc";
+    final String topic = args[0];
+    final String accessId = args[1];
+    final String secretKey = args[2];
+    final String bucketName = args[3];
+    final String bucketKey = args[4] + topic + ".avsc";
     boolean readAsHadoopFile = Boolean.parseBoolean(args[5]);
     AmazonS3Client s3Client = new AmazonS3Client(new BasicAWSCredentials(accessId, secretKey));
     S3Object obj = s3Client.getObject(new GetObjectRequest(bucketName, bucketKey));
@@ -182,6 +186,7 @@ public class SimpleAppRead {
 
     JavaSparkContext sc = new JavaSparkContext(conf);
     JavaPairRDD<String, byte[]> rdd;
+
     if (! readAsHadoopFile)
       rdd = sc.textFile("s3n://mongodwh/spark-backup/" + StreamEventBackup.dateString + "/" + topic + "/*").mapToPair(new PairFunction<String, String, byte[]>() {
         @Override
@@ -190,12 +195,40 @@ public class SimpleAppRead {
         }
       });
     else {
+//      JavaPairRDD<Text, BytesWritable> rddTemp = sc.sequenceFile("s3n://mongodwh/spark-backup/" + StreamEventBackup.dateString + "/" + topic + "/*",
+//              Text.class,
+//              BytesWritable.class);
       JavaPairRDD<Text, BytesWritable> rddTemp = sc.sequenceFile("s3n://mongodwh/spark-backup/" + StreamEventBackup.dateString + "/" + topic + "/*",
               Text.class,
               BytesWritable.class);
       rdd = rddTemp.mapToPair(new ConvertToNative());
     }
 //    printRdd(rdd, "COLLECTED");
+
+    JavaRDD<String> testRdd = rdd.map(new Function<Tuple2<String, byte[]>, String>() {
+      Schema sch;
+      BinaryDecoder avroBinaryDecoder;
+      GenericDatumReader<GenericRecord> avroEventReader;
+      GenericRecord avroEvent;
+
+      @Override
+      public String call(Tuple2<String, byte[]> stringTuple2) throws Exception {
+        AmazonS3Client s3Client = new AmazonS3Client(new BasicAWSCredentials(accessId, secretKey));
+        S3Object obj = s3Client.getObject(new GetObjectRequest(bucketName, bucketKey));
+        if (sch == null) {
+          sch = new Schema.Parser().parse(obj.getObjectContent());
+        }
+        avroEventReader = new GenericDatumReader<GenericRecord>(sch);
+        avroBinaryDecoder = DecoderFactory.get().binaryDecoder(new ByteBufferInputStream(Lists.newArrayList(ByteBuffer.wrap(stringTuple2._2()))), avroBinaryDecoder);
+        avroEvent = avroEventReader.read(avroEvent, avroBinaryDecoder);
+
+        return avroEvent.get("source").toString();
+      }
+    });
+    List<String> list = testRdd.collect();
+    for(String s: list){
+      System.out.println(s);
+    }
 
     JavaPairRDD<String, byte[]> distinctRdd = rdd.distinct();
     printRdd(distinctRdd, "DISTINCT");
@@ -241,6 +274,7 @@ public class SimpleAppRead {
 
     JavaPairRDD<String, String> test1 = sample1.mapToPair(new AvroValueDecode(accessId, secretKey, bucketName, bucketKey));
     printRdd(test1, "DECODE");
+
 //    List<Tuple2<String, byte[]>> collected = rdd.collect();
 
 
