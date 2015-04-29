@@ -60,9 +60,12 @@ public class Visit implements Serializable{
       return false;
     else{
       Visit visitObj = (Visit) visit;
-      return (visitObj.timestamp == this.timestamp) &&
+      boolean res = (visitObj.timestamp == this.timestamp) &&
               ((visitObj.userId == null && this.userId == null) || (visitObj.userId != null && visitObj.userId.equals(this.userId))) &&
               ((visitObj.source == null && this.source == null) || (visitObj.source != null && visitObj.source.equals(this.source)));
+//      DebugUtility.printSomething("result is :" + res + " is userid same? " + visitObj.userId.equals(this.userId) + "is source same? ");
+      return res;
+
     }
 
   }

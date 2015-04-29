@@ -139,7 +139,7 @@ public class SampleJoin {
     List<Visit> data2other = new ArrayList<Visit>();
     data2other.add(new Visit(obj2));
     data2other.add(new Visit(obj2));
-    data2other.add(new Visit(obj3));
+    data2other.add(new Visit(obj2));
 
     JavaRDD<Visit> rdd2other = sc.parallelize(data2other);
     DebugUtility.logSomething("finished parallelized rdd2");
