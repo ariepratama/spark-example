@@ -20,7 +20,7 @@ public class DebugUtility {
     logger.info("Number of Retrieved dataset: " + dataset.size());
     logger.info("-------------------------------------------------------");
     for(Tuple2 datum: dataset) {
-      String msg = "[" + tag + "] key is= " + datum._1() + "value is= ";
+      String msg = "[" + tag + "] key is = " + datum._1() + " value is = ";
       if (byte[].class.toString().equals(datum._2().getClass().toString()))
         logger.info(msg + new String((byte[]) datum._2()));
       else {
@@ -47,7 +47,7 @@ public class DebugUtility {
     System.out.println("Number of Retrieved dataset: " + dataset.size());
     System.out.println("-------------------------------------------------------");
     for(Tuple2 datum: dataset) {
-      String msg = "[" + tag + "] key is= " + datum._1() + "value is= ";
+      String msg = "[" + tag + "] key is = " + datum._1() + " value is = ";
       if (byte[].class.toString().equals(datum._2().getClass().toString()))
         System.out.println(msg + new String((byte[]) datum._2()));
       else {

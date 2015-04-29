@@ -15,6 +15,8 @@ import java.util.List;
 public class SampleJoin {
   private static final String[] KEYS = new String[]{"google", "bing", "direct"};
   private static final int[] KEYS_INT = new int[]{1,2,3};
+  private static final String VAL_1 = "NYONG";
+  private static final String VAL_2 = "RONNYs";
 
 
   public static void main (String[] args){
@@ -22,31 +24,31 @@ public class SampleJoin {
     JavaSparkContext sc = new JavaSparkContext(conf);
 
     //construct rdd 1
-    List<Tuple2<String, Integer>> data1 = new ArrayList<Tuple2<String, Integer>>();
-    data1.add(new Tuple2<String, Integer>(KEYS[0], 100));
-    data1.add(new Tuple2<String, Integer>(KEYS[0], 100));
-    data1.add(new Tuple2<String, Integer>(KEYS[2], 100));
-    data1.add(new Tuple2<String, Integer>(KEYS[0], 100));
-    data1.add(new Tuple2<String, Integer>(KEYS[1], 100));
+    List<Tuple2<String, String>> data1 = new ArrayList<Tuple2<String, String>>();
+    data1.add(new Tuple2<String, String>(KEYS[0], VAL_1));
+    data1.add(new Tuple2<String, String>(KEYS[0], VAL_1));
+    data1.add(new Tuple2<String, String>(KEYS[2], VAL_1));
+    data1.add(new Tuple2<String, String>(KEYS[0], VAL_1));
+    data1.add(new Tuple2<String, String>(KEYS[1], VAL_1));
 
-    JavaPairRDD<String, Integer> rdd1 = sc.parallelizePairs(data1);
+    JavaPairRDD<String, String> rdd1 = sc.parallelizePairs(data1);
     DebugUtility.logSomething("finished parallelized rdd1");
     DebugUtility.printRdd(rdd1, "RDD1-STRING");
 
     //construct rdd 2
-    List<Tuple2<String, Integer>> data2 = new ArrayList<Tuple2<String, Integer>>();
-    data2.add(new Tuple2<String, Integer>(KEYS[1], 100));
-    data2.add(new Tuple2<String, Integer>(KEYS[1], 100));
-    data2.add(new Tuple2<String, Integer>(KEYS[1], 100));
-    data2.add(new Tuple2<String, Integer>(KEYS[1], 100));
-    data2.add(new Tuple2<String, Integer>(KEYS[2], 100));
+    List<Tuple2<String, String>> data2 = new ArrayList<Tuple2<String, String>>();
+    data2.add(new Tuple2<String, String>(KEYS[1], VAL_2));
+    data2.add(new Tuple2<String, String>(KEYS[1], VAL_2));
+    data2.add(new Tuple2<String, String>(KEYS[1], VAL_2));
+    data2.add(new Tuple2<String, String>(KEYS[1], VAL_2));
+    data2.add(new Tuple2<String, String>(KEYS[2], VAL_2));
 
-    JavaPairRDD<String, Integer> rdd2 = sc.parallelizePairs(data2);
+    JavaPairRDD<String, String> rdd2 = sc.parallelizePairs(data2);
     DebugUtility.logSomething("finished parallelized rdd2");
     DebugUtility.printRdd(rdd1, "RDD2-STRING");
 
     DebugUtility.logSomething("------------- BEGIN JOIN -------------");
-    JavaPairRDD<String, Tuple2<Integer, Integer>> rddJoin = rdd1.join(rdd2);
+    JavaPairRDD<String, Tuple2<String, String>> rddJoin = rdd1.join(rdd2);
     DebugUtility.printRdd(rddJoin, "JOIN");
 
     DebugUtility.logSomething("------------- TRY WITH INTEGER -------------");
