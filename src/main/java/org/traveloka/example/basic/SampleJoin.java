@@ -46,7 +46,7 @@ public class SampleJoin {
 
     JavaPairRDD<String, String> rdd2 = sc.parallelizePairs(data2);
     DebugUtility.logSomething("finished parallelized rdd2");
-    DebugUtility.printRdd(rdd1, "RDD2-STRING");
+    DebugUtility.printRdd(rdd2, "RDD2-STRING");
 
     DebugUtility.logSomething("------------- BEGIN JOIN -------------");
     JavaPairRDD<String, Tuple2<String, String>> rddJoin = rdd1.join(rdd2);
