@@ -2,6 +2,7 @@ package org.traveloka.example.basic;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.traveloka.helper.DebugUtility;
 import scala.Tuple2;
@@ -51,36 +52,56 @@ public class SampleJoin {
     JavaPairRDD<String, Tuple2<String, String>> rddJoin = rdd1.join(rdd2);
     DebugUtility.printRdd(rddJoin, "JOIN");
 
-    DebugUtility.logSomething("------------- TRY WITH INTEGER -------------");
-    //construct rdd 1
-    List<Tuple2<Integer, Integer>> data1int = new ArrayList<Tuple2<Integer, Integer>>();
-    data1int.add(new Tuple2<Integer, Integer>(KEYS_INT[0], 100));
-    data1int.add(new Tuple2<Integer, Integer>(KEYS_INT[0], 100));
-    data1int.add(new Tuple2<Integer, Integer>(KEYS_INT[2], 100));
-    data1int.add(new Tuple2<Integer, Integer>(KEYS_INT[0], 100));
-    data1int.add(new Tuple2<Integer, Integer>(KEYS_INT[1], 100));
+//    DebugUtility.logSomething("------------- TRY WITH INTEGER -------------");
+//    //construct rdd 1
+//    List<Tuple2<Integer, Integer>> data1int = new ArrayList<Tuple2<Integer, Integer>>();
+//    data1int.add(new Tuple2<Integer, Integer>(KEYS_INT[0], 100));
+//    data1int.add(new Tuple2<Integer, Integer>(KEYS_INT[0], 100));
+//    data1int.add(new Tuple2<Integer, Integer>(KEYS_INT[2], 100));
+//    data1int.add(new Tuple2<Integer, Integer>(KEYS_INT[0], 100));
+//    data1int.add(new Tuple2<Integer, Integer>(KEYS_INT[1], 100));
+//
+//    JavaPairRDD<Integer, Integer> rdd1int = sc.parallelizePairs(data1int);
+//    DebugUtility.logSomething("finished parallelized rdd1");
+//    DebugUtility.printRdd(rdd1int, "RDD1-STRING");
+//
+//    //construct rdd 2
+//    List<Tuple2<Integer, Integer>> data2int = new ArrayList<Tuple2<Integer, Integer>>();
+//    data2int.add(new Tuple2<Integer, Integer>(KEYS_INT[1], 100));
+//    data2int.add(new Tuple2<Integer, Integer>(KEYS_INT[1], 100));
+//    data2int.add(new Tuple2<Integer, Integer>(KEYS_INT[1], 100));
+//    data2int.add(new Tuple2<Integer, Integer>(KEYS_INT[1], 100));
+//    data2int.add(new Tuple2<Integer, Integer>(KEYS_INT[2], 100));
+//
+//    JavaPairRDD<Integer, Integer> rdd2int = sc.parallelizePairs(data2int);
+//    DebugUtility.logSomething("finished parallelized rdd2");
+//    DebugUtility.printRdd(rdd1, "RDD2-STRING");
+//
+//    DebugUtility.logSomething("------------- BEGIN JOIN -------------");
+//    JavaPairRDD<Integer, Tuple2<Integer, Integer>> rddJoinint = rdd1int.join(rdd2int);
+//    DebugUtility.printRdd(rddJoinint, "JOIN");
 
-    JavaPairRDD<Integer, Integer> rdd1int = sc.parallelizePairs(data1int);
+    DebugUtility.logSomething("------------- TRY WITH NON PAIR RDD -------------");
+
+    //construct rdd 1
+    List<String> data1normal = new ArrayList<String>();
+    data1normal.add(KEYS[0]);
+    data1normal.add(KEYS[0]);
+    data1normal.add(KEYS[0]);
+    data1normal.add(KEYS[1]);
+    data1normal.add(KEYS[2]);
+
+    JavaRDD<String> rdd1normal = sc.parallelize(data1normal);
     DebugUtility.logSomething("finished parallelized rdd1");
-    DebugUtility.printRdd(rdd1int, "RDD1-STRING");
+    DebugUtility.printRdd(rdd1normal, "RDD1-STRING-NO-PAIR");
 
     //construct rdd 2
-    List<Tuple2<Integer, Integer>> data2int = new ArrayList<Tuple2<Integer, Integer>>();
-    data2int.add(new Tuple2<Integer, Integer>(KEYS_INT[1], 100));
-    data2int.add(new Tuple2<Integer, Integer>(KEYS_INT[1], 100));
-    data2int.add(new Tuple2<Integer, Integer>(KEYS_INT[1], 100));
-    data2int.add(new Tuple2<Integer, Integer>(KEYS_INT[1], 100));
-    data2int.add(new Tuple2<Integer, Integer>(KEYS_INT[2], 100));
+    List<String> data2normal = new ArrayList<String>();
+    data2normal.add(KEYS[1]);
 
-    JavaPairRDD<Integer, Integer> rdd2int = sc.parallelizePairs(data2int);
+    JavaRDD<String> rdd2normal = sc.parallelize(data2normal);
     DebugUtility.logSomething("finished parallelized rdd2");
-    DebugUtility.printRdd(rdd1, "RDD2-STRING");
-
-    DebugUtility.logSomething("------------- BEGIN JOIN -------------");
-    JavaPairRDD<Integer, Tuple2<Integer, Integer>> rddJoinint = rdd1int.join(rdd2int);
-    DebugUtility.printRdd(rddJoinint, "JOIN");
-
-
+    DebugUtility.printRdd(rdd2normal, "RDD2-STRING-NO-PAIR");
 
 
 

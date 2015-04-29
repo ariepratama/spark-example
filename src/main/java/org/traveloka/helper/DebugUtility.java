@@ -2,6 +2,7 @@ package org.traveloka.helper;
 
 import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
 import scala.Tuple2;
 
 import java.util.List;
@@ -61,6 +62,18 @@ public class DebugUtility {
         }
       }
     }
+  }
+
+  public static void printRdd(JavaRDD rdd, String tag){
+    List<Object> dataset = rdd.collect();
+    System.out.println("-------------------------------------------------------");
+    System.out.println("Number of Retrieved dataset: " + dataset.size());
+    System.out.println("-------------------------------------------------------");
+    for(Object obj: dataset) {
+      String msg = "[" + tag + "] " + " value is = " + obj.toString();
+      System.out.println(msg);
+    }
+
   }
 
   public static void printSomething(String msg){
