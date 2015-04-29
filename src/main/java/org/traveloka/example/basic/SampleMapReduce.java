@@ -50,7 +50,6 @@ public class SampleMapReduce {
     DebugUtility.printRdd(rdd1, "RDD1-CONSTRUCT-2");
 
     // reduce operation to perform max function by key
-
     reducedByKey = rdd1.reduceByKey(new Function2<Integer, Integer, Integer>() {
       @Override
       public Integer call(Integer integer, Integer integer2) throws Exception {
@@ -59,6 +58,16 @@ public class SampleMapReduce {
     });
 
     DebugUtility.printRdd(reducedByKey, "RDD1-REDUCED-MAX");
+
+    // reduce operation to perform max function by key
+    reducedByKey = rdd1.reduceByKey(new Function2<Integer, Integer, Integer>() {
+      @Override
+      public Integer call(Integer integer, Integer integer2) throws Exception {
+        return Math.min(integer, integer2);
+      }
+    });
+
+    DebugUtility.printRdd(reducedByKey, "RDD1-REDUCED-MIN");
 
 
 
