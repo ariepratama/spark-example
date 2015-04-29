@@ -76,4 +76,9 @@ public class Visit implements Serializable {
   public String toString(){
     return "[" + this.userId + "," + this.source + "," + this.timestamp + "]";
   }
+
+  @Override
+  public int hashCode(){
+    return this.timestamp;
+  }
 }
