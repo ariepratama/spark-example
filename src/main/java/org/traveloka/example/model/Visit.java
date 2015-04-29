@@ -56,8 +56,10 @@ public class Visit implements Serializable{
   @Override
   public boolean equals(Object visit){
     DebugUtility.printSomething("calling equals on object");
-    if (visit == null)
+    if (visit == null) {
+      DebugUtility.printSomething("other visit is null");
       return false;
+    }
     else{
       Visit visitObj = (Visit) visit;
       boolean res = (visitObj.timestamp == this.timestamp) &&
