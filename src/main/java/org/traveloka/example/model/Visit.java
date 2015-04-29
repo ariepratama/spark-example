@@ -56,7 +56,7 @@ public class Visit implements Serializable{
   @Override
   public boolean equals(Object visit){
     DebugUtility.printSomething("calling equals on object");
-    if (visit == null && ! Visit.class.equals(visit.getClass()))
+    if (visit == null)
       return false;
     else{
       Visit visitObj = (Visit) visit;
