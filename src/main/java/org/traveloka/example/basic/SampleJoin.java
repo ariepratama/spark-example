@@ -98,10 +98,23 @@ public class SampleJoin {
     //construct rdd 2
     List<String> data2normal = new ArrayList<String>();
     data2normal.add(KEYS[1]);
+    data2normal.add(KEYS[1]);
+    data2normal.add(KEYS[1]);
+    data2normal.add(KEYS[1]);
+    data2normal.add(KEYS[1]);
 
     JavaRDD<String> rdd2normal = sc.parallelize(data2normal);
     DebugUtility.logSomething("finished parallelized rdd2");
     DebugUtility.printRdd(rdd2normal, "RDD2-STRING-NO-PAIR");
+
+    DebugUtility.logSomething("------------- BEGIN JOIN -------------");
+    JavaRDD<String> rddJoinNormal = rdd1normal.intersection(rdd2normal);
+    DebugUtility.printRdd(rddJoinNormal, "RDD-NORMAL-JOIN");
+
+
+    DebugUtility.logSomething("------------- BEGIN DISTINCT -------------");
+    JavaRDD<String> rddDistinct = rdd1normal.distinct();
+    DebugUtility.printRdd(rddJoinNormal, "RDD-NORMAL-DISTINCT");
 
 
 
