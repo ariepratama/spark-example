@@ -4,6 +4,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.traveloka.example.model.Visit;
 import org.traveloka.helper.DebugUtility;
 import scala.Tuple2;
 
@@ -118,6 +119,39 @@ public class SampleJoin {
 
     JavaRDD<String> rddDistinct2 = rdd2normal.distinct();
     DebugUtility.printRdd(rddDistinct2, "RDD-NORMAL-DISTINCT-2");
+
+
+    DebugUtility.logSomething("------------- TRY WITH NON BASIC OBJECT -------------");
+    Visit obj1 = new Visit("user1", "google", 1);
+    Visit obj2 = new Visit("user2", "bing", 2);
+    Visit obj3 = new Visit("user3", "direct", 3);
+
+    //construct rdd 1
+    List<Visit> data1other = new ArrayList<Visit>();
+    data1other.add(new Visit(obj1));
+    data1other.add(new Visit(obj1));
+    data1other.add(new Visit(obj2));
+
+    JavaRDD<Visit> rdd1other = sc.parallelize(data1other);
+    DebugUtility.logSomething("finished parallelized rdd1");
+    DebugUtility.printRdd(rdd2normal, "RDD1-NON-BASIC");
+
+    List<Visit> data2other = new ArrayList<Visit>();
+    data2other.add(new Visit(obj2));
+    data2other.add(new Visit(obj2));
+    data2other.add(new Visit(obj3));
+
+    JavaRDD<Visit> rdd2other = sc.parallelize(data2other);
+    DebugUtility.logSomething("finished parallelized rdd2");
+    DebugUtility.printRdd(rdd2normal, "RDD2-NON-BASIC");
+
+
+    JavaRDD<Visit> intersectRddOther = rdd1other.intersection(rdd2other);
+    DebugUtility.printRdd(intersectRddOther, "RDD-INTERSECT-NON-OBJECT");
+
+
+
+
 
 
 
