@@ -2,10 +2,12 @@ package org.traveloka.example.model;
 
 import org.traveloka.helper.DebugUtility;
 
+import java.io.Serializable;
+
 /**
  * Created by ariesutiono on 29/04/15.
  */
-public class Visit {
+public class Visit implements Serializable{
   private String userId;
   private String source;
   private int timestamp;
