@@ -63,7 +63,7 @@ public class Visit implements Serializable{
       boolean res = (visitObj.timestamp == this.timestamp) &&
               ((visitObj.userId == null && this.userId == null) || (visitObj.userId != null && visitObj.userId.equals(this.userId))) &&
               ((visitObj.source == null && this.source == null) || (visitObj.source != null && visitObj.source.equals(this.source)));
-//      DebugUtility.printSomething("result is :" + res + " is userid same? " + visitObj.userId.equals(this.userId) + "is source same? ");
+      DebugUtility.printSomething("result is :" + res + " is userid same? " + visitObj.userId.equals(this.userId) + "is source same? " + visitObj.source.equals(this.source));
       return res;
 
     }
