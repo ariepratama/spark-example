@@ -53,12 +53,14 @@ public class DebugUtility {
         System.out.println(msg + new String((byte[]) datum._2()));
       else {
         Object obj = datum._2();
-        if (String.class.equals(obj.getClass())) {
-          System.out.println(msg + datum._2());
-        }
-        else if(Tuple2.class.equals(obj.getClass())){
+//        if (String.class.equals(obj.getClass())) {
+//          System.out.println(msg + datum._2());
+//        }
+        if(Tuple2.class.equals(obj.getClass())){
           Tuple2 objTuple = (Tuple2) obj;
           System.out.println(msg + objTuple._1().toString() + objTuple._2().toString());
+        }else{
+          System.out.println(msg + datum._2());
         }
       }
     }
