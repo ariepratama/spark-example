@@ -32,16 +32,33 @@ public class SampleMapReduce {
     JavaPairRDD<String, Integer> rdd1 = sc.parallelizePairs(data1);
     DebugUtility.printRdd(rdd1, "RDD1-CONSTRUCT");
 
-    // grouped by key
+    // grouped by key and sum
     JavaPairRDD<String, Integer> reducedByKey = rdd1.reduceByKey(new Function2<Integer, Integer, Integer>() {
       @Override
       public Integer call(Integer integer, Integer integer2) throws Exception {
         return integer + integer2;
       }
     });
-    DebugUtility.printRdd(reducedByKey, "RDD1-REDUCED");
+    DebugUtility.printRdd(reducedByKey, "RDD1-REDUCED-SUM");
 
+    // add some more data
+    data1.add(new Tuple2<String, Integer>(KEYS[0], VALUES[4]));
+    data1.add(new Tuple2<String, Integer>(KEYS[1], VALUES[4]));
+    data1.add(new Tuple2<String, Integer>(KEYS[2], VALUES[4]));
 
+    rdd1 = sc.parallelizePairs(data1);
+    DebugUtility.printRdd(rdd1, "RDD1-CONSTRUCT-2");
+
+    // reduce operation to perform max function by key
+
+    reducedByKey = rdd1.reduceByKey(new Function2<Integer, Integer, Integer>() {
+      @Override
+      public Integer call(Integer integer, Integer integer2) throws Exception {
+        return Math.max(integer, integer2);
+      }
+    });
+
+    DebugUtility.printRdd(reducedByKey, "RDD1-REDUCED-MAX");
 
 
 
