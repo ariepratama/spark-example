@@ -101,7 +101,7 @@ public class SampleJoin {
     data2normal.add(KEYS[1]);
     data2normal.add(KEYS[1]);
     data2normal.add(KEYS[1]);
-    data2normal.add(KEYS[1]);
+    data2normal.add(KEYS[2]);
 
     JavaRDD<String> rdd2normal = sc.parallelize(data2normal);
     DebugUtility.logSomething("finished parallelized rdd2");
@@ -109,12 +109,15 @@ public class SampleJoin {
 
     DebugUtility.logSomething("------------- BEGIN JOIN -------------");
     JavaRDD<String> rddJoinNormal = rdd1normal.intersection(rdd2normal);
-    DebugUtility.printRdd(rddJoinNormal, "RDD-NORMAL-JOIN");
+    DebugUtility.printRdd(rddJoinNormal, "RDD-NORMAL-INTERSECT");
 
 
     DebugUtility.logSomething("------------- BEGIN DISTINCT -------------");
     JavaRDD<String> rddDistinct = rdd1normal.distinct();
-    DebugUtility.printRdd(rddJoinNormal, "RDD-NORMAL-DISTINCT");
+    DebugUtility.printRdd(rddDistinct, "RDD-NORMAL-DISTINCT");
+
+    JavaRDD<String> rddDistinct2 = rdd2normal.distinct();
+    DebugUtility.printRdd(rddDistinct2, "RDD-NORMAL-DISTINCT-2");
 
 
 
