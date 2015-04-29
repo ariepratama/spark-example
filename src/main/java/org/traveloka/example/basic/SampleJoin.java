@@ -134,7 +134,7 @@ public class SampleJoin {
 
     JavaRDD<Visit> rdd1other = sc.parallelize(data1other);
     DebugUtility.logSomething("finished parallelized rdd1");
-    DebugUtility.printRdd(rdd2normal, "RDD1-NON-BASIC");
+    DebugUtility.printRdd(rdd1other, "RDD1-NON-BASIC");
 
     List<Visit> data2other = new ArrayList<Visit>();
     data2other.add(new Visit(obj2));
@@ -143,7 +143,7 @@ public class SampleJoin {
 
     JavaRDD<Visit> rdd2other = sc.parallelize(data2other);
     DebugUtility.logSomething("finished parallelized rdd2");
-    DebugUtility.printRdd(rdd2normal, "RDD2-NON-BASIC");
+    DebugUtility.printRdd(rdd2other, "RDD2-NON-BASIC");
 
 
     JavaRDD<Visit> intersectRddOther = rdd1other.intersection(rdd2other);
