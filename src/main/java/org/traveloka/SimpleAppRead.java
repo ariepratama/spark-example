@@ -221,7 +221,7 @@ public class SimpleAppRead {
 //    AmazonS3Client s3Client = new AmazonS3Client(new BasicAWSCredentials(accessId, secretKey));
 //    S3Object obj = s3Client.getObject(new GetObjectRequest(bucketName, bucketKey));
 
-    final Schema sch = new Schema.Parser().parse(obj.getObjectContent());
+//    final Schema sch = new Schema.Parser().parse(obj.getObjectContent());
 //    JavaRDD<String> testRdd = rdd.sample(false, 5).map(new Function<Tuple2<String, byte[]>, String>() {
 //
 //      BinaryDecoder avroBinaryDecoder;
