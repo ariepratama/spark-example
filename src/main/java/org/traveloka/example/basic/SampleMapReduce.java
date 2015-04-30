@@ -74,12 +74,12 @@ public class SampleMapReduce {
     // unique latest operation
 
     List<Tuple2<String, Tuple2<Long, Integer>>> data1WithTime = new ArrayList<Tuple2<String, Tuple2<Long, Integer>>>();
-    data1WithTime.add(new Tuple2<String, Tuple2<Long, Integer>>(KEYS[0], new Tuple2<Long, Integer>(System.currentTimeMillis(),VALUES[0])));
-    data1WithTime.add(new Tuple2<String, Tuple2<Long, Integer>>(KEYS[0], new Tuple2<Long, Integer>(System.currentTimeMillis(),VALUES[1])));
-    data1WithTime.add(new Tuple2<String, Tuple2<Long, Integer>>(KEYS[0], new Tuple2<Long, Integer>(System.currentTimeMillis(),VALUES[2])));
-    data1WithTime.add(new Tuple2<String, Tuple2<Long, Integer>>(KEYS[1], new Tuple2<Long, Integer>(System.currentTimeMillis(),VALUES[2])));
-    data1WithTime.add(new Tuple2<String, Tuple2<Long, Integer>>(KEYS[1], new Tuple2<Long, Integer>(System.currentTimeMillis(),VALUES[0])));
-    data1WithTime.add(new Tuple2<String, Tuple2<Long, Integer>>(KEYS[1], new Tuple2<Long, Integer>(System.currentTimeMillis(),VALUES[1])));
+    data1WithTime.add(new Tuple2<String, Tuple2<Long, Integer>>(KEYS[0], new Tuple2<Long, Integer>(1L,VALUES[0])));
+    data1WithTime.add(new Tuple2<String, Tuple2<Long, Integer>>(KEYS[0], new Tuple2<Long, Integer>(3L,VALUES[1])));
+    data1WithTime.add(new Tuple2<String, Tuple2<Long, Integer>>(KEYS[0], new Tuple2<Long, Integer>(2L,VALUES[2])));
+    data1WithTime.add(new Tuple2<String, Tuple2<Long, Integer>>(KEYS[1], new Tuple2<Long, Integer>(3L,VALUES[2])));
+    data1WithTime.add(new Tuple2<String, Tuple2<Long, Integer>>(KEYS[1], new Tuple2<Long, Integer>(5L,VALUES[0])));
+    data1WithTime.add(new Tuple2<String, Tuple2<Long, Integer>>(KEYS[1], new Tuple2<Long, Integer>(10L,VALUES[1])));
 
     JavaPairRDD<String, Tuple2<Long, Integer>> rdd1WithTime = sc.parallelizePairs(data1WithTime);
     DebugUtility.printRdd(rdd1WithTime, "RDD1-TIME-CONSTRUCT");
