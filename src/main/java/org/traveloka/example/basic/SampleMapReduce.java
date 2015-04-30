@@ -3,7 +3,9 @@ package org.traveloka.example.basic;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.Function2;
+import org.apache.spark.api.java.function.PairFunction;
 import org.traveloka.helper.DebugUtility;
 import scala.Tuple2;
 
@@ -59,7 +61,7 @@ public class SampleMapReduce {
 
     DebugUtility.printRdd(reducedByKey, "RDD1-REDUCED-MAX");
 
-    // reduce operation to perform max function by key
+    // reduce operation to perform min function by key
     reducedByKey = rdd1.reduceByKey(new Function2<Integer, Integer, Integer>() {
       @Override
       public Integer call(Integer integer, Integer integer2) throws Exception {
@@ -68,6 +70,37 @@ public class SampleMapReduce {
     });
 
     DebugUtility.printRdd(reducedByKey, "RDD1-REDUCED-MIN");
+
+    // unique latest operation
+
+    List<Tuple2<String, Tuple2<Long, Integer>>> data1WithTime = new ArrayList<Tuple2<String, Tuple2<Long, Integer>>>();
+    data1WithTime.add(new Tuple2<String, Tuple2<Long, Integer>>(KEYS[0], new Tuple2<Long, Integer>(System.currentTimeMillis(),VALUES[0])));
+    data1WithTime.add(new Tuple2<String, Tuple2<Long, Integer>>(KEYS[0], new Tuple2<Long, Integer>(System.currentTimeMillis(),VALUES[1])));
+    data1WithTime.add(new Tuple2<String, Tuple2<Long, Integer>>(KEYS[0], new Tuple2<Long, Integer>(System.currentTimeMillis(),VALUES[2])));
+    data1WithTime.add(new Tuple2<String, Tuple2<Long, Integer>>(KEYS[1], new Tuple2<Long, Integer>(System.currentTimeMillis(),VALUES[2])));
+    data1WithTime.add(new Tuple2<String, Tuple2<Long, Integer>>(KEYS[1], new Tuple2<Long, Integer>(System.currentTimeMillis(),VALUES[0])));
+    data1WithTime.add(new Tuple2<String, Tuple2<Long, Integer>>(KEYS[1], new Tuple2<Long, Integer>(System.currentTimeMillis(),VALUES[1])));
+
+    JavaPairRDD<String, Tuple2<Long, Integer>> rdd1WithTime = sc.parallelizePairs(data1WithTime);
+    DebugUtility.printRdd(rdd1WithTime, "RDD1-TIME-CONSTRUCT");
+
+    JavaPairRDD<String, Tuple2<Long, Integer>> reducedWithTime= rdd1WithTime.reduceByKey(new Function2<Tuple2<Long, Integer>, Tuple2<Long, Integer>, Tuple2<Long, Integer>>() {
+      @Override
+      public Tuple2<Long, Integer> call(Tuple2<Long, Integer> longIntegerTuple2, Tuple2<Long, Integer> longIntegerTuple22) throws Exception {
+        return (longIntegerTuple2._1() >= longIntegerTuple22._1()) ? longIntegerTuple2 : longIntegerTuple22;
+      }
+    });
+
+
+    JavaPairRDD<String, Integer> latest = reducedWithTime.mapToPair(new PairFunction<Tuple2<String, Tuple2<Long, Integer>>, String, Integer>() {
+      @Override
+      public Tuple2<String, Integer> call(Tuple2<String, Tuple2<Long, Integer>> stringTuple2Tuple2) throws Exception {
+        return new Tuple2<String, Integer>(stringTuple2Tuple2._1(), stringTuple2Tuple2._2()._2());
+      }
+    });
+    DebugUtility.printRdd(latest, "RDD1-TIME-LATEST");
+
+
 
 
 
