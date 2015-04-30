@@ -16,7 +16,6 @@ import org.apache.hadoop.io.Text;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.Function2;
@@ -195,7 +194,7 @@ public class SimpleAppRead {
     boolean readAsHadoopFile = Boolean.parseBoolean(args[5]);
     AmazonS3Client s3Client = new AmazonS3Client(new BasicAWSCredentials(accessId, secretKey));
     S3Object obj = s3Client.getObject(new GetObjectRequest(bucketName, bucketKey));
-    decoder = new AvroDecoder(obj.getObjectContent());
+//    decoder = new AvroDecoder(obj.getObjectContent());
 
     JavaSparkContext sc = new JavaSparkContext(conf);
     JavaPairRDD<String, byte[]> rdd;
