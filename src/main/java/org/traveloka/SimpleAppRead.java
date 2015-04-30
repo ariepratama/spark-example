@@ -19,6 +19,7 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
+import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.PairFunction;
 import org.traveloka.exception.NoTopicException;
 import org.traveloka.helper.ArgValidationUtility;
@@ -56,7 +57,7 @@ public class SimpleAppRead {
 
     @Override
     public Tuple2<String, String> call(Tuple2<String, byte[]> stringBytesTuple2) throws Exception {
-      return new Tuple2<String, String>(stringBytesTuple2._1(), trytoDecode.fromBytes(stringBytesTuple2._2()));
+      return new Tuple2<String, String>(trytoDecode.fromBytes(stringBytesTuple2._2(), "cookieId"), trytoDecode.fromBytes(stringBytesTuple2._2(), "interface"));
     }
   }
 
@@ -98,7 +99,24 @@ public class SimpleAppRead {
               avroBinaryDecoder);
       try {
         avroEvent = avroEventReader.read(avroEvent, avroBinaryDecoder);
-        res = avroEvent.get("source").toString();
+//        res = avroEvent.get("source").toString();
+        res = avroEvent.toString();
+        System.out.println("decoded String to: " + res);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+      return res;
+    }
+
+    public String fromBytes(byte[] bytes, String col){
+      String res = "null";
+      avroEventReader = new GenericDatumReader<GenericRecord>(sch);
+      avroBinaryDecoder = DecoderFactory.get().binaryDecoder(new ByteBufferInputStream(Lists.newArrayList(ByteBuffer.wrap(bytes))),
+              avroBinaryDecoder);
+      try {
+        avroEvent = avroEventReader.read(avroEvent, avroBinaryDecoder);
+//        res = avroEvent.get("source").toString();
+        res = avroEvent.get(col).toString();
         System.out.println("decoded String to: " + res);
       } catch (IOException e) {
         e.printStackTrace();
@@ -106,6 +124,7 @@ public class SimpleAppRead {
       return res;
     }
   }
+
 
   private static void logRdd(JavaPairRDD rdd, String tag){
     List<Tuple2> dataset = rdd.collect();
@@ -223,51 +242,68 @@ public class SimpleAppRead {
 //    for(String s: list){
 //      System.out.println(s);
 //    }
+//
+//    JavaPairRDD<String, byte[]> distinctRdd = rdd.distinct();
+//    printRdd(distinctRdd, "DISTINCT");
+//
+//    JavaPairRDD<String, byte[]> sample1 = sc.parallelize(rdd.takeSample(false, 5)).mapToPair(new PairFunction<Tuple2<String, byte[]>, String, byte[]>() {
+//      @Override
+//      public Tuple2<String, byte[]> call(Tuple2<String, byte[]> stringTuple2) throws Exception {
+//        return stringTuple2;
+//      }
+//    });
+//    printRdd(sample1, "SAMPLING1");
+//    JavaPairRDD<String, byte[]> sample2 = sc.parallelize(rdd.takeSample(false, 5)).mapToPair(new PairFunction<Tuple2<String, byte[]>, String, byte[]>() {
+//      @Override
+//      public Tuple2<String, byte[]> call(Tuple2<String, byte[]> stringTuple2) throws Exception {
+//        return stringTuple2;
+//      }
+//    });
+//    printRdd(sample2, "SAMPLING2");
+//
+//    List<Tuple2<String, byte[]>> t = new ArrayList<Tuple2<String, byte[]>>();
+//    t.add(new Tuple2<String, byte[]>("direct", "asdfasdf".getBytes()));
+//    JavaPairRDD<String, byte[]> tRdd = sc.parallelizePairs(t);
+//
+//    List<Tuple2<String, byte[]>> t1 = new ArrayList<Tuple2<String, byte[]>>();
+//    t1.add(new Tuple2<String, byte[]>("adwords", "asdfasdf1".getBytes()));
+//    t1.add(new Tuple2<String, byte[]>("google", "asdfasdf2".getBytes()));
+//    t1.add(new Tuple2<String, byte[]>("halohalo", "asdfasdf3".getBytes()));
+//    t1.add(new Tuple2<String, byte[]>("halohalo", "asdfasdf4".getBytes()));
+//    JavaPairRDD<String, byte[]> t1Rdd = sc.parallelizePairs(t1);
 
-    JavaPairRDD<String, byte[]> distinctRdd = rdd.distinct();
-    printRdd(distinctRdd, "DISTINCT");
 
-    JavaPairRDD<String, byte[]> sample1 = sc.parallelize(rdd.takeSample(false, 5)).mapToPair(new PairFunction<Tuple2<String, byte[]>, String, byte[]>() {
-      @Override
-      public Tuple2<String, byte[]> call(Tuple2<String, byte[]> stringTuple2) throws Exception {
-        return stringTuple2;
-      }
-    });
-    printRdd(sample1, "SAMPLING1");
-    JavaPairRDD<String, byte[]> sample2 = sc.parallelize(rdd.takeSample(false, 5)).mapToPair(new PairFunction<Tuple2<String, byte[]>, String, byte[]>() {
-      @Override
-      public Tuple2<String, byte[]> call(Tuple2<String, byte[]> stringTuple2) throws Exception {
-        return stringTuple2;
-      }
-    });
-    printRdd(sample2, "SAMPLING2");
+//    JavaPairRDD<String, byte[]> intersectedRdd = sample1.intersection(sample2);
+//    printRdd(intersectedRdd, "INTERSECTION");
+//
+//    JavaPairRDD<String, byte[]> subtractRdd = sample1.subtractByKey(tRdd);
+//    printRdd(subtractRdd, "SUBTRACT");
+//
+//    JavaPairRDD<String, byte[]> unionRdd = sample1.union(tRdd);
+//    printRdd(unionRdd, "UNION");
+//
+//    JavaPairRDD leftJoinedRdd = t1Rdd.leftOuterJoin(unionRdd);
+//    printRdd(leftJoinedRdd, "LEFT JOIN");
 
-    List<Tuple2<String, byte[]>> t = new ArrayList<Tuple2<String, byte[]>>();
-    t.add(new Tuple2<String, byte[]>("direct", "asdfasdf".getBytes()));
-    JavaPairRDD<String, byte[]> tRdd = sc.parallelizePairs(t);
-
-    List<Tuple2<String, byte[]>> t1 = new ArrayList<Tuple2<String, byte[]>>();
-    t1.add(new Tuple2<String, byte[]>("adwords", "asdfasdf1".getBytes()));
-    t1.add(new Tuple2<String, byte[]>("google", "asdfasdf2".getBytes()));
-    t1.add(new Tuple2<String, byte[]>("halohalo", "asdfasdf3".getBytes()));
-    t1.add(new Tuple2<String, byte[]>("halohalo", "asdfasdf4".getBytes()));
-    JavaPairRDD<String, byte[]> t1Rdd = sc.parallelizePairs(t1);
-
-
-    JavaPairRDD<String, byte[]> intersectedRdd = sample1.intersection(sample2);
-    printRdd(intersectedRdd, "INTERSECTION");
-
-    JavaPairRDD<String, byte[]> subtractRdd = sample1.subtractByKey(tRdd);
-    printRdd(subtractRdd, "SUBTRACT");
-
-    JavaPairRDD<String, byte[]> unionRdd = sample1.union(tRdd);
-    printRdd(unionRdd, "UNION");
-
-    JavaPairRDD leftJoinedRdd = t1Rdd.leftOuterJoin(unionRdd);
-    printRdd(leftJoinedRdd, "LEFT JOIN");
-
-    JavaPairRDD<String, String> test1 = sample1.mapToPair(new AvroValueDecode(accessId, secretKey, bucketName, bucketKey));
+    JavaPairRDD<String, String> test1 = rdd.mapToPair(new AvroValueDecode(accessId, secretKey, bucketName, bucketKey));
     printRdd(test1, "DECODE");
+    JavaPairRDD<Tuple2<String, String>, Integer> cookieInterfaceMap = test1.mapToPair(new PairFunction<Tuple2<String, String>, Tuple2<String, String>, Integer>() {
+      @Override
+      public Tuple2<Tuple2<String, String>, Integer> call(Tuple2<String, String> stringStringTuple2) throws Exception {
+        return new Tuple2<Tuple2<String, String>, Integer>(new Tuple2<String, String>(stringStringTuple2._1(), stringStringTuple2._2()), 1);
+      }
+    }).reduceByKey(new Function2<Integer, Integer, Integer>() {
+      @Override
+      public Integer call(Integer integer, Integer integer2) throws Exception {
+        return integer + integer2;
+      }
+    });
+
+    List<Tuple2<Tuple2<String, String>, Integer>> results = cookieInterfaceMap.collect();
+    for (Tuple2<Tuple2<String, String>, Integer> result : results ){
+      System.out.println("key is = [" + result._1()._1() + "," + result._1()._2() + "] value is = " + result._2());
+    }
+
 
 //    List<Tuple2<String, byte[]>> collected = rdd.collect();
 
