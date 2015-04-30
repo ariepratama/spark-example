@@ -126,6 +126,7 @@ public class StreamEventBackup {
     final String secretKey = args[4];
     final String bucketName = args[5];
     final String bucketKey = args[6] + topic + ".avsc";
+    final String zookeeperAddress = (args.length > 7) ?  args[7] : null;
 
 
     Map<String, Integer> topicMap = new HashMap<String, Integer>();
@@ -135,7 +136,7 @@ public class StreamEventBackup {
     // initiate kafka and spark stream
     Map<String, String> kafkaParams = new HashMap<String, String>();
     kafkaParams.put("group.id", KAFKA_DEFAULT_GROUPID);
-    kafkaParams.put("zookeeper.connect", KAFKA_DEFAULT_ZOOKEEPER);
+    kafkaParams.put("zookeeper.connect", (zookeeperAddress == null) ? KAFKA_DEFAULT_ZOOKEEPER : zookeeperAddress);
     kafkaParams.put("zookeeper.session.timeout.ms", "3000");
     kafkaParams.put("zookeeper.sync.time.ms", "200");
     kafkaParams.put("auto.commit.interval.ms", (SPARK_STREAMING_DEVIDE_INTERVAL * 2) + "");
