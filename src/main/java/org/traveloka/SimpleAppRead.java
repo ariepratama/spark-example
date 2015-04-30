@@ -101,7 +101,7 @@ public class SimpleAppRead {
         avroEvent = avroEventReader.read(avroEvent, avroBinaryDecoder);
 //        res = avroEvent.get("source").toString();
         res = avroEvent.toString();
-        System.out.println("decoded String to: " + res);
+//        System.out.println("decoded String to: " + res);
       } catch (IOException e) {
         e.printStackTrace();
       }
@@ -221,7 +221,7 @@ public class SimpleAppRead {
 //    AmazonS3Client s3Client = new AmazonS3Client(new BasicAWSCredentials(accessId, secretKey));
 //    S3Object obj = s3Client.getObject(new GetObjectRequest(bucketName, bucketKey));
 
-//    final Schema sch = new Schema.Parser().parse(obj.getObjectContent());
+    final Schema sch = new Schema.Parser().parse(obj.getObjectContent());
 //    JavaRDD<String> testRdd = rdd.sample(false, 5).map(new Function<Tuple2<String, byte[]>, String>() {
 //
 //      BinaryDecoder avroBinaryDecoder;
@@ -285,7 +285,29 @@ public class SimpleAppRead {
 //    JavaPairRDD leftJoinedRdd = t1Rdd.leftOuterJoin(unionRdd);
 //    printRdd(leftJoinedRdd, "LEFT JOIN");
 
-    JavaPairRDD<String, String> test1 = rdd.mapToPair(new AvroValueDecode(accessId, secretKey, bucketName, bucketKey));
+//    JavaPairRDD<String, String> test1 = rdd.mapToPair(new AvroValueDecode(accessId, secretKey, bucketName, bucketKey));
+    JavaPairRDD<String, String> test1 = rdd.mapToPair(new PairFunction<Tuple2<String, byte[]>, String, String>() {
+      BinaryDecoder avroBinaryDecoder;
+      GenericDatumReader<GenericRecord> avroEventReader;
+      GenericRecord avroEvent;
+      @Override
+      public Tuple2<String, String> call(Tuple2<String, byte[]> stringTuple2) throws Exception {
+        avroEventReader = new GenericDatumReader<GenericRecord>(sch);
+        avroBinaryDecoder = DecoderFactory.get().binaryDecoder(new ByteBufferInputStream(Lists.newArrayList(ByteBuffer.wrap(stringTuple2._2()))),
+                avroBinaryDecoder);
+        String _1 = "";
+        String _2 = "";
+        try {
+          avroEvent = avroEventReader.read(avroEvent, avroBinaryDecoder);
+          _1 = avroEvent.get("cookieId").toString();
+          _2 = avroEvent.get("interface").toString();
+//        System.out.println("decoded String to: " + res);
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+        return new Tuple2<String, String>(_1, _2);
+      }
+    });
     printRdd(test1, "DECODE");
     JavaPairRDD<Tuple2<String, String>, Integer> cookieInterfaceMap = test1.mapToPair(new PairFunction<Tuple2<String, String>, Tuple2<String, String>, Integer>() {
       @Override
