@@ -72,7 +72,6 @@ public class SampleMapReduce {
     DebugUtility.printRdd(reducedByKey, "RDD1-REDUCED-MIN");
 
     // unique latest operation
-
     List<Tuple2<String, Tuple2<Long, Integer>>> data1WithTime = new ArrayList<Tuple2<String, Tuple2<Long, Integer>>>();
     data1WithTime.add(new Tuple2<String, Tuple2<Long, Integer>>(KEYS[0], new Tuple2<Long, Integer>(1L,VALUES[0])));
     data1WithTime.add(new Tuple2<String, Tuple2<Long, Integer>>(KEYS[0], new Tuple2<Long, Integer>(3L,VALUES[1])));

@@ -20,6 +20,7 @@ public class DebugUtility {
     StringBuilder res = new StringBuilder();
     res.append("-------------------------------------------------------" + NEW_LINE);
     res.append("Number of Retrieved dataset: " + dataset.size() + NEW_LINE);
+    res.append("-------------------------------------------------------" + NEW_LINE);
     for(Tuple2 datum: dataset) {
       String msg = "[" + tag + "] key is = " + datum._1() + " value is = ";
       if (byte[].class.toString().equals(datum._2().getClass().toString()))
