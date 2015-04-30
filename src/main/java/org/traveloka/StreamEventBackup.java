@@ -170,11 +170,11 @@ public class StreamEventBackup {
       public Void call(JavaPairRDD<String, byte[]> stringJavaPairRDD) throws Exception {
 
         if (stringJavaPairRDD.partitions().size() != 0) {
-          logger.info("partition size is not zero");
-          List<String> keys = stringJavaPairRDD.keys().collect();
-          for (String key : keys) {
-            logger.info("key|********|" + key);
-          }
+          logger.info("********partition size is not zero********");
+//          List<String> keys = stringJavaPairRDD.keys().collect();
+//          for (String key : keys) {
+//            logger.info("key|********|" + key);
+//          }
           String filepath = "s3n://mongodwh/spark-backup/" + dateString + "/" + topic + "/" + "/partition-" + System.currentTimeMillis();
           if (saveAsHadoopFile) {
             JavaPairRDD<Text, BytesWritable> writeable = stringJavaPairRDD.mapToPair(new ConvertToWritableTypes());
