@@ -58,7 +58,7 @@ public class DebugUtility {
 //        }
         if(Tuple2.class.equals(obj.getClass())){
           Tuple2 objTuple = (Tuple2) obj;
-          System.out.println(msg + objTuple._1().toString() + objTuple._2().toString());
+          System.out.println(msg + "[" + objTuple._1().toString() + "," + objTuple._2().toString() + "]");
         }else{
           System.out.println(msg + datum._2());
         }
